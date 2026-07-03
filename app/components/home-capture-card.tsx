@@ -69,14 +69,14 @@ export default function HomeCaptureCard() {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="relative flex min-h-[24rem] w-full flex-col overflow-hidden rounded-[30px] border border-white/72 bg-white/78 p-5 shadow-lingi backdrop-blur-sm transition-transform duration-150 hover:scale-[0.998]"
+        className="relative mx-auto w-full max-w-[440px] h-[clamp(24rem,calc(100vh-19.75rem),34rem)] flex-col rounded-[30px] border-[1px] border-[rgba(255,255,255,0.72)] bg-[rgba(255,253,245,0.78)] p-5 shadow-lingi backdrop-blur-sm"
       >
         <img
           src="/lingi-parrot.png"
           alt="Lingi parrot"
           className="pointer-events-none absolute right-4 top-3 h-[64px] w-[56px] drop-shadow-[0_10px_20px_rgba(0,0,0,0.08)] parrot-bob"
         />
-        <div className="mt-16 flex h-full flex-col rounded-[18px] bg-[#DDEFE9]/82 p-5">
+        <div className="mt-16 flex h-full flex-col rounded-[18px] bg-[rgba(221,239,233,0.82)] p-5">
           <div className="text-[12px] font-medium leading-none text-[#0E6F74]">{dateText}</div>
           <div className="mt-7 text-[16px] leading-[28px] text-[#61777B]">Type here to catch what you want to remember...</div>
         </div>

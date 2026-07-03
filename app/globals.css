@@ -101,6 +101,11 @@ main {
   transform-origin: 50% 50%;
 }
 
+/* ensure app container doesn't scale on large screens */
+main.mx-auto {
+  max-width: 480px;
+}
+
 /* Saved popup styling */
 .lingi-saved-popup {
   pointer-events: none;
