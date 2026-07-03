@@ -1,0 +1,83 @@
+:root {
+  color-scheme: light;
+  --font-lingi-display: "Arial Rounded MT Bold", "Avenir Next", "SF Pro Rounded", ui-rounded, system-ui, -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+  --font-lingi-body: "Avenir Next", "SF Pro Rounded", ui-rounded, system-ui, -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100%;
+  margin: 0;
+  background:
+    radial-gradient(circle at 12% -6%, rgba(145, 197, 230, 0.46), transparent 19rem),
+    radial-gradient(circle at 92% 8%, rgba(246, 207, 105, 0.32), transparent 18rem),
+    radial-gradient(circle at 12% 76%, rgba(134, 199, 141, 0.22), transparent 18rem),
+    linear-gradient(180deg, #fbf7ec 0%, #eef7f4 48%, #f8eedf 100%);
+  color: #243238;
+  font-family: var(--font-lingi-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+textarea {
+  outline: none;
+  border: none;
+}
+
+@keyframes note-save-away {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    transform-origin: 88% 50%;
+  }
+  45% {
+    opacity: 1;
+    transform: translateX(14px) scale(0.94);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(58%) scale(0.42);
+    transform-origin: 100% 50%;
+  }
+}
+
+@keyframes saved-pop-in {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-note-save-away {
+  animation: note-save-away 560ms cubic-bezier(.22,1,.36,1) forwards;
+}
+
+.animate-saved-pop-in {
+  animation: saved-pop-in 220ms ease-out both;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+

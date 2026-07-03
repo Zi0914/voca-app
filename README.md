@@ -1,2 +1,3 @@
-# pluma-app
-AI language note app for saving, translating, and practicing English
+# lingi-app
+
+Lingi is a mobile-first vocabulary capture PWA prototype for intermediate English learners.
