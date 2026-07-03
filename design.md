@@ -1,12 +1,12 @@
 ## Mobile App Frame
 
 Lingi Mobile PWA Design Spec
-Product
+## Product
 Lingi is a mobile-first vocabulary capture PWA for intermediate English learners. The product should feel like a gentle personal language journal with a small companion energy, not a classroom app and not a corporate SaaS product.
 The current prototype only needs two features:
 Home: quickly type and save something the user wants to remember.
 Library: represented in bottom navigation only for now.
-Visual Direction
+## Visual Direction
 Keywords:
 gentle
 calm
@@ -22,7 +22,7 @@ too many square frames
 heavy feature explanation
 dark editor pages
 strong visual clutter
-Palette
+## Palette
 Use soft Monet-inspired colors with Lingi's primary peacock teal.
 Primary teal: #008C95
 Text dark: #243238
@@ -39,7 +39,7 @@ radial blue glow at top-left
 radial yellow glow at top-right
 radial green glow near lower-left
 cream-to-mint-to-warm gradient
-Typography
+## Typography
 Use rounded, friendly system fonts.
 Font stack:
 Display: "Arial Rounded MT Bold", "Avenir Next", "SF Pro Rounded", ui-rounded, system-ui, -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif
@@ -76,7 +76,7 @@ color #61777B
 Bottom navigation labels:
 12px
 regular
-Layout
+## Layout
 Design for iPhone first, max app width 480px.
 Main app container:
 max-width 480px
@@ -90,7 +90,7 @@ no logo image in the header
 bottom spacing 30px
 Greeting block:
 margin-bottom 20px
-Home Daily Note Card
+## Home Daily Note Card
 Purpose:
 Encourage the user to type anything they want to remember.
 The whole card is tappable.
@@ -117,7 +117,7 @@ padding 16px 20px
 Interaction:
 tapping card opens the writing page
 card active state may scale to 0.99
-Writing Page
+## Writing Page
 This is a full-screen mobile page, not a modal overlay.
 Outer editor page:
 fixed full viewport
@@ -180,7 +180,7 @@ You can find it in Library anytime.
 
 pop-in animation: 220ms, translateY 16px to 0, opacity 0 to 1
 auto-dismiss after about 4 seconds
-Bottom Navigation
+## Bottom Navigation
 Only two tabs:
 Home
 Library
@@ -227,11 +227,11 @@ clicking Library slides selected indicator to the right
 Library icon/text turns green
 Home icon/text turns gray
 clicking Home slides back
-Assets
+## Assets
 Required:
 public/lingi-parrot.png
 The parrot image must have a transparent background. It should not be contained inside a circular frame on the home card.
-Prototype Scope
+## Prototype Scope
 This is still a visual prototype.
 Do not add:
 backend
