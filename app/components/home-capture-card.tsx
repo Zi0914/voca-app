@@ -74,7 +74,7 @@ export default function HomeCaptureCard() {
         <img
           src="/lingi-parrot.png"
           alt="Lingi parrot"
-          className="pointer-events-none absolute right-4 top-3 h-[64px] w-[56px] drop-shadow-[0_10px_20px_rgba(0,0,0,0.08)]"
+          className="pointer-events-none absolute right-4 top-3 h-[64px] w-[56px] drop-shadow-[0_10px_20px_rgba(0,0,0,0.08)] parrot-bob"
         />
         <div className="mt-16 flex h-full flex-col rounded-[18px] bg-[#DDEFE9]/82 p-5">
           <div className="text-[12px] font-medium leading-none text-[#0E6F74]">{dateText}</div>
@@ -120,7 +120,7 @@ export default function HomeCaptureCard() {
       ) : null}
 
       {showSavedPopup ? (
-        <div className="pointer-events-none fixed bottom-[calc(92px+env(safe-area-inset-bottom))] left-1/2 z-30 w-[min(440px,calc(100%-40px))] -translate-x-1/2 rounded-[22px] border border-white/75 bg-white/78 px-4 py-4 shadow-[0_18px_42px_rgba(64,93,91,0.16)] backdrop-blur-md animate-saved-pop-in">
+        <div className="lingi-saved-popup fixed bottom-[calc(92px+env(safe-area-inset-bottom))] left-1/2 z-30 w-[min(440px,calc(100%-40px))] -translate-x-1/2">
           <p className="text-[15px] font-medium text-[#243238]">Saved to Library</p>
           <p className="mt-1 text-[13px] text-[#61777B]">You can find it in Library anytime.</p>
         </div>

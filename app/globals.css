@@ -90,6 +90,34 @@ main {
   box-shadow: 0 26px 58px rgba(64,93,91,0.14);
 }
 
+/* Parrot bobbing for gentle playfulness */
+@keyframes parrot-bob {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-6px) rotate(-1deg); }
+  100% { transform: translateY(0); }
+}
+.parrot-bob {
+  animation: parrot-bob 3200ms ease-in-out infinite;
+  transform-origin: 50% 50%;
+}
+
+/* Saved popup styling */
+.lingi-saved-popup {
+  pointer-events: none;
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,0.75);
+  background: rgba(255,253,245,0.9);
+  box-shadow: 0 18px 42px rgba(64,93,91,0.16);
+  padding: 12px 16px;
+  animation: saved-pop-in 220ms ease-out both;
+}
+
+/* subtle focus and active states */
+.save-button:active {
+  transform: translateY(1px) scale(0.995);
+}
+
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from 'react';
 import HomeHeader from './components/home-header';
 import HomeCaptureCard from './components/home-capture-card';
