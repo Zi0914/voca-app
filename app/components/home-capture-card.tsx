@@ -74,11 +74,12 @@ export default function HomeCaptureCard() {
         <img
           src="/lingi-parrot.png"
           alt="Lingi parrot"
-          className="pointer-events-none absolute right-4 top-3 h-[64px] w-[56px] drop-shadow-[0_10px_20px_rgba(0,0,0,0.08)] parrot-bob"
+          className="pointer-events-none absolute right-[16px] top-[12px] h-[64px] w-[56px] drop-shadow-[0_10px_20px_rgba(0,0,0,0.08)] parrot-bob"
         />
-        <div className="mt-16 flex h-full flex-col rounded-[18px] bg-[rgba(221,239,233,0.82)] p-5">
-          <div className="text-[12px] font-medium leading-none text-[#0E6F74]">{dateText}</div>
-          <div className="mt-7 text-[16px] leading-[28px] text-[#61777B]">Type here to catch what you want to remember...</div>
+        <div className="mt-3 text-[12px] font-medium leading-none text-[#0E6F74]">{dateText}</div>
+
+        <div className="mt-4 flex h-full flex-col rounded-[18px] bg-[rgba(221,239,233,0.82)] p-6">
+          <div className="text-[16px] leading-[28px] text-[#61777B] pt-1">Type here to catch what you want to remember...</div>
         </div>
       </button>
 
