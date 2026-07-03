@@ -40,6 +40,17 @@ export default function HomeCaptureCard() {
     }
 
     setIsSaving(true);
+    // persist to localStorage
+    const entry = { id: `${Date.now()}`, text: note.trim(), addedAt: new Date().toISOString() };
+    try {
+      const raw = localStorage.getItem('lingi_notes');
+      const arr = raw ? JSON.parse(raw) : [];
+      arr.unshift(entry);
+      localStorage.setItem('lingi_notes', JSON.stringify(arr));
+    } catch (e) {
+      // ignore
+    }
+
     window.setTimeout(() => {
       setIsSaving(false);
       setIsOpen(false);

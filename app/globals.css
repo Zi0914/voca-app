@@ -77,6 +77,19 @@ textarea {
   animation: saved-pop-in 220ms ease-out both;
 }
 
+/* app container tweaks matching design */
+main {
+  max-width: 480px;
+}
+
+.font-lingiDisplay {
+  font-family: var(--font-lingi-display);
+}
+
+.shadow-lingi {
+  box-shadow: 0 26px 58px rgba(64,93,91,0.14);
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
