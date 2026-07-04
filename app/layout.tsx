@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Lingi',
+  title: 'Voca',
   description: 'A gentle mobile-first vocabulary capture PWA prototype.',
 };
 

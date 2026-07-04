@@ -1,7 +1,7 @@
-# Skill: Recreate Lingi Mobile PWA Prototype
-Use this skill when building or rebuilding the Lingi mobile-first PWA prototype in a Next.js + Tailwind CSS project.
+# Skill: Recreate Voca Mobile PWA Prototype
+Use this skill when building or rebuilding the Voca mobile-first PWA prototype in a Next.js + Tailwind CSS project.
 ## Goal
-Create a polished mobile-first homepage and note capture flow for Lingi, a gentle vocabulary capture app for intermediate English learners. The result should look like a real launchable MVP, not a wireframe.
+Create a polished mobile-first homepage and note capture flow for Voca, a gentle vocabulary capture app for intermediate English learners. The result should look like a real launchable MVP, not a wireframe.
 The prototype has one main task:
 User opens Home.
 User taps the daily note card.
@@ -102,7 +102,7 @@ export default function HomePage() {
 }
 Header Component
 HomeHeader should only show centered text:
-Lingi
+Voca
 24px
 extra bold
 no logo image

@@ -31,7 +31,7 @@ export default function HomeCaptureCard({ note, onOpenNote }: Props) {
       >
         <img
           src="/lingi-parrot.png"
-          alt="Lingi parrot"
+          alt="Voca parrot"
           className="pointer-events-none absolute right-[16px] top-[12px] h-[64px] w-[56px] drop-shadow-[0_10px_20px_rgba(0,0,0,0.08)] parrot-bob"
         />
         <div className="mt-3 self-start text-[12px] font-medium leading-none text-[#0E6F74]">{dateText}</div>

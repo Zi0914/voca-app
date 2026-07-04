@@ -1,8 +1,8 @@
 ## Mobile App Frame
 
-Lingi Mobile PWA Design Spec
+Voca Mobile PWA Design Spec
 ## Product
-Lingi is a mobile-first vocabulary capture PWA for intermediate English learners. The product should feel like a gentle personal language journal with a small companion energy, not a classroom app and not a corporate SaaS product.
+Voca is a mobile-first vocabulary capture PWA for intermediate English learners. The product should feel like a gentle personal language journal with a small companion energy, not a classroom app and not a corporate SaaS product.
 The current prototype only needs two features:
 Home: quickly type and save something the user wants to remember.
 Library: represented in bottom navigation only for now.
@@ -23,7 +23,7 @@ heavy feature explanation
 dark editor pages
 strong visual clutter
 ## Palette
-Use soft Monet-inspired colors with Lingi's primary peacock teal.
+Use soft Monet-inspired colors with Voca's primary peacock teal.
 Primary teal: #008C95
 Text dark: #243238
 Secondary text: #61777B
@@ -84,7 +84,7 @@ horizontal padding 20px; increase to 24px at min-width: 400px
 bottom padding should account for bottom nav: 104px + safe-area-inset-bottom
 top padding: max(20px, safe-area-inset-top)
 Top brand:
-centered text Lingi
+centered text Voca
 no logo image in the header
 24px, extra bold
 bottom spacing 30px
@@ -245,4 +245,3 @@ note text lives in local React state
 save clears the current note
 popup confirms saved state
 bottom navigation only changes selected visual state
-

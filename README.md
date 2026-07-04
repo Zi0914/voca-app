@@ -1,13 +1,13 @@
-# lingi-app
+# voca-app
 
-Lingi is a mobile-first vocabulary capture PWA prototype for intermediate English learners.
+Voca is a mobile-first vocabulary capture PWA prototype for intermediate English learners.
 
 Repo rename
-1. On GitHub, open the repository Settings → Rename, and change the name to `lingi-app`.
+1. On GitHub, open the repository Settings -> Rename, and change the name to `voca-app`.
 2. Locally, update the remote URL if needed and run:
 
 ```bash
-git remote set-url origin https://github.com/<your-username>/lingi-app.git
+git remote set-url origin https://github.com/<your-username>/voca-app.git
 git fetch origin
 git branch -u origin/main main
 ```
