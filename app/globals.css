@@ -108,7 +108,7 @@ main.mx-auto {
 
 /* Saved popup styling */
 .lingi-saved-popup {
-  pointer-events: none;
+  pointer-events: auto;
   border-radius: 22px;
   border: 1px solid rgba(255,255,255,0.75);
   background: rgba(255,253,245,0.9);
@@ -126,4 +126,3 @@ main.mx-auto {
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-

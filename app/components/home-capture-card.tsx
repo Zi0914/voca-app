@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, Save } from 'lucide-react';
+import { useMemo } from 'react';
 
 const dateFormatter = new Intl.DateTimeFormat('en-US', {
   weekday: 'long',
@@ -10,54 +9,13 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
   year: 'numeric',
 });
 
-export default function HomeCaptureCard() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [note, setNote] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
-  const [showSavedPopup, setShowSavedPopup] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+type Props = {
+  note: string;
+  onOpenNote: () => void;
+};
 
+export default function HomeCaptureCard({ note, onOpenNote }: Props) {
   const dateText = useMemo(() => dateFormatter.format(new Date()), []);
-
-  useEffect(() => {
-    if (isOpen && textareaRef.current) {
-      textareaRef.current.focus();
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!showSavedPopup) {
-      return;
-    }
-
-    const timeout = window.setTimeout(() => setShowSavedPopup(false), 4200);
-    return () => window.clearTimeout(timeout);
-  }, [showSavedPopup]);
-
-  const handleSave = () => {
-    if (!note.trim()) {
-      return;
-    }
-
-    setIsSaving(true);
-    // persist to localStorage
-    const entry = { id: `${Date.now()}`, text: note.trim(), addedAt: new Date().toISOString() };
-    try {
-      const raw = localStorage.getItem('lingi_notes');
-      const arr = raw ? JSON.parse(raw) : [];
-      arr.unshift(entry);
-      localStorage.setItem('lingi_notes', JSON.stringify(arr));
-    } catch (e) {
-      // ignore
-    }
-
-    window.setTimeout(() => {
-      setIsSaving(false);
-      setIsOpen(false);
-      setNote('');
-      setShowSavedPopup(true);
-    }, 560);
-  };
 
   return (
     <section className="flex flex-1 flex-col gap-6">
@@ -68,64 +26,22 @@ export default function HomeCaptureCard() {
 
       <button
         type="button"
-        onClick={() => setIsOpen(true)}
-        className="relative mx-auto w-full max-w-[440px] h-[clamp(24rem,calc(100vh-19.75rem),34rem)] flex-col rounded-[30px] border-[1px] border-[rgba(255,255,255,0.72)] bg-[rgba(255,253,245,0.78)] p-5 shadow-lingi backdrop-blur-sm"
+        onClick={onOpenNote}
+        className="relative mx-auto flex h-[clamp(24rem,calc(100vh-19.75rem),34rem)] w-full max-w-[440px] flex-col rounded-[30px] border-[1px] border-[rgba(255,255,255,0.72)] bg-[rgba(255,253,245,0.78)] p-5 shadow-lingi backdrop-blur-sm"
       >
         <img
           src="/lingi-parrot.png"
           alt="Lingi parrot"
           className="pointer-events-none absolute right-[16px] top-[12px] h-[64px] w-[56px] drop-shadow-[0_10px_20px_rgba(0,0,0,0.08)] parrot-bob"
         />
-        <div className="mt-3 text-[12px] font-medium leading-none text-[#0E6F74]">{dateText}</div>
+        <div className="mt-3 self-start text-[12px] font-medium leading-none text-[#0E6F74]">{dateText}</div>
 
-        <div className="mt-4 flex h-full flex-col rounded-[18px] bg-[rgba(221,239,233,0.82)] p-6">
-          <div className="text-[16px] leading-[28px] text-[#61777B] pt-1">Type here to catch what you want to remember...</div>
-        </div>
-      </button>
-
-      {isOpen ? (
-        <div className="fixed inset-0 z-20 flex min-h-screen w-full items-start justify-center bg-black/10 px-5 pt-[max(1.25rem,env(safe-area-inset-top))] min-[400px]:px-6">
-          <div className={`relative h-full w-full max-w-[480px] ${isSaving ? 'animate-note-save-away' : ''}`}>
-            <div className="flex h-full flex-col overflow-hidden rounded-[30px] border border-white/72 bg-white/78 p-5 shadow-lingi backdrop-blur-sm">
-              <div className="mb-4 grid h-[48px] grid-cols-[72px_1fr_72px] items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  className="flex h-8 w-8 items-center justify-center rounded-full border border-[#008C95] bg-white/28 text-[#008C95]"
-                >
-                  <ArrowLeft size={16} />
-                </button>
-                <div className="text-center text-[11px] font-medium leading-none text-[#0E6F74]">{dateText}</div>
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={!note.trim() || isSaving}
-                  className="inline-flex h-8 items-center justify-center rounded-[12px] px-5 text-[13px] font-medium text-white transition-colors disabled:bg-[#B9C8C3] enabled:bg-[#008C95]"
-                >
-                  <Save size={14} className="mr-2" />
-                  Save
-                </button>
-              </div>
-              <div className="flex-1 overflow-hidden rounded-[18px] bg-[#DDEFE9]/82 p-5">
-                <textarea
-                  ref={textareaRef}
-                  value={note}
-                  onChange={(event) => setNote(event.target.value)}
-                  placeholder="Type here to catch what you want to remember..."
-                  className="h-full w-full resize-none bg-transparent text-[16px] leading-[28px] text-[#243238] outline-none"
-                />
-              </div>
-            </div>
+        <div className="mt-4 flex min-h-0 flex-1 flex-col rounded-[18px] bg-[rgba(221,239,233,0.82)] p-6">
+          <div className="pt-1 text-[16px] leading-[28px] text-[#61777B]">
+            {note.trim() ? note.trim() : 'Type here to catch what you want to remember...'}
           </div>
         </div>
-      ) : null}
-
-      {showSavedPopup ? (
-        <div className="lingi-saved-popup fixed bottom-[calc(92px+env(safe-area-inset-bottom))] left-1/2 z-30 w-[min(440px,calc(100%-40px))] -translate-x-1/2">
-          <p className="text-[15px] font-medium text-[#243238]">Saved to Library</p>
-          <p className="mt-1 text-[13px] text-[#61777B]">You can find it in Library anytime.</p>
-        </div>
-      ) : null}
+      </button>
     </section>
   );
 }
