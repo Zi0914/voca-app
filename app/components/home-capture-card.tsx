@@ -20,7 +20,7 @@ export default function HomeCaptureCard({ note, onOpenNote }: Props) {
   return (
     <section className="flex flex-1 flex-col gap-6">
       <div className="space-y-2">
-        <p className="text-[30px] font-extrabold leading-none text-[#243238]">Hi Liz,</p>
+        <p className="font-lingiHand text-[30px] font-medium leading-none text-[#243238]">Hi Liz,</p>
         <p className="text-[18px] leading-[24px] text-[#61777B]">let’s keep today’s words</p>
       </div>
 
