@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
-import { Caveat } from 'next/font/google';
+import { Fredoka } from 'next/font/google';
 import './globals.css';
 
-const caveat = Caveat({
+const fredoka = Fredoka({
   subsets: ['latin'],
   weight: '500',
-  variable: '--font-lingi-hand',
+  variable: '--font-lingi-greeting',
 });
 
 export const metadata: Metadata = {
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={caveat.variable}>
+    <html lang="en" className={fredoka.variable}>
       <body>{children}</body>
     </html>
   );

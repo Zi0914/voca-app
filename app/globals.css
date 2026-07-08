@@ -86,8 +86,8 @@ main {
   font-family: var(--font-lingi-display);
 }
 
-.font-lingiHand {
-  font-family: var(--font-lingi-hand);
+.font-lingiGreeting {
+  font-family: var(--font-lingi-greeting);
 }
 
 .shadow-lingi {
