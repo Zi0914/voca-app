@@ -10,6 +10,23 @@ import WritingPage from './components/writing-page';
 type ActiveView = 'home' | 'library' | 'note';
 const STORAGE_KEY = 'voca_notes';
 const LEGACY_STORAGE_KEY = 'lingi_notes';
+const MOCK_SAVED_NOTES: SavedNote[] = [
+  {
+    id: 'mock-2026-07-08-serendipity',
+    text: 'serendipity - finding something good by accident',
+    savedAt: '2026-07-08T09:18:00.000-07:00',
+  },
+  {
+    id: 'mock-2026-07-08-linger',
+    text: 'linger - to stay a little longer than expected',
+    savedAt: '2026-07-08T11:42:00.000-07:00',
+  },
+  {
+    id: 'mock-2026-07-08-tender',
+    text: 'tender - gentle, kind, or easy to hurt',
+    savedAt: '2026-07-08T15:06:00.000-07:00',
+  },
+];
 
 function normalizeSavedNotes(value: unknown): SavedNote[] {
   if (!Array.isArray(value)) {
@@ -69,7 +86,7 @@ export default function HomePage() {
       const rawLegacyNotes = window.localStorage.getItem(LEGACY_STORAGE_KEY);
       const normalizedNotes = rawNotes ? normalizeSavedNotes(JSON.parse(rawNotes)) : [];
       const normalizedLegacyNotes = rawLegacyNotes ? normalizeSavedNotes(JSON.parse(rawLegacyNotes)) : [];
-      const nextNotes = mergeSavedNotes(normalizedNotes, normalizedLegacyNotes);
+      const nextNotes = mergeSavedNotes(normalizedNotes, normalizedLegacyNotes, MOCK_SAVED_NOTES);
 
       if (nextNotes.length > 0) {
         setSavedNotes(nextNotes);
