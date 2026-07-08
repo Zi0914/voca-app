@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export type SavedNote = {
   id: string;
@@ -90,7 +90,6 @@ function getEmptyStateMessage(date: Date) {
 }
 
 export default function Library({ notes }: Props) {
-  const [query, setQuery] = useState('');
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [hasAutoSelectedDate, setHasAutoSelectedDate] = useState(false);
 
@@ -110,16 +109,13 @@ export default function Library({ notes }: Props) {
   const visibleWeek = useMemo(() => getVisibleWeek(selectedDate), [selectedDate]);
   const selectedDateNoteCount = useMemo(() => getNoteCountForDate(notes, selectedDate), [notes, selectedDate]);
   const filteredNotes = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-
     return notes
       .filter((note) => {
         const noteDate = new Date(note.savedAt);
         return sameDay(noteDate, selectedDate);
       })
-      .filter((note) => note.text.toLowerCase().includes(normalizedQuery))
       .sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
-  }, [notes, query, selectedDate]);
+  }, [notes, selectedDate]);
 
   const goToPreviousPeriod = () => {
     setSelectedDate((currentDate) => addDays(currentDate, -7));
@@ -131,16 +127,6 @@ export default function Library({ notes }: Props) {
 
   return (
     <section className="flex min-h-0 flex-1 flex-col">
-      <label className="mb-4 flex h-12 items-center gap-3 rounded-[24px] border border-[#E1E6E3] bg-white px-4">
-        <Search size={18} className="shrink-0 text-[#008C95]" strokeWidth={2.2} />
-        <input
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search notes"
-          className="min-w-0 flex-1 bg-transparent text-[14px] leading-none text-[#243238] outline-none placeholder:text-[#61777B]"
-        />
-      </label>
-
       <div className="mb-5 border-b border-[rgba(97,119,123,0.12)] pb-4">
         <p className="font-lingiText truncate text-center text-[14px] font-normal leading-none text-[#243238]">{getCalendarTitle(selectedDate)}</p>
 
@@ -166,6 +152,9 @@ export default function Library({ notes }: Props) {
                 : isFutureDate
                   ? 'text-[#7E8F8C]'
                   : 'text-[#A8B3B1]';
+              const weekdayColor = isSelected ? 'text-white/88' : 'text-[#61777B]';
+              const selectedTextColor = isSelected ? 'text-white' : dateNumberColor;
+              const countColor = isSelected ? 'text-white' : 'text-[#111111]';
 
               return (
                 <button
@@ -176,16 +165,16 @@ export default function Library({ notes }: Props) {
                     setSelectedDate(date);
                   }}
                   className={`mx-auto flex h-[72px] w-[54px] flex-col items-center justify-center gap-2 rounded-[18px] border transition-colors ${
-                    isSelected ? 'border-[#D7DEDA] bg-white/28' : 'border-transparent bg-transparent'
+                    isSelected ? 'border-[#008C95] bg-[#008C95]' : 'border-transparent bg-transparent'
                   }`}
                 >
-                  <span className="text-[16px] font-medium leading-none text-[#61777B]">
+                  <span className={`text-[16px] font-medium leading-none ${weekdayColor}`}>
                     {weekdayLetters[index]}
                   </span>
-                  <span className={`font-lingiText text-[13px] font-normal leading-none ${dateNumberColor}`}>
+                  <span className={`font-lingiText text-[13px] font-normal leading-none ${selectedTextColor}`}>
                     {date.getDate()}
                   </span>
-                  <span className="font-lingiText flex h-[17px] min-w-[17px] items-center justify-center px-1 text-[11px] font-normal leading-none text-[#111111]">
+                  <span className={`font-lingiText flex h-[17px] min-w-[17px] items-center justify-center px-1 text-[11px] font-normal leading-none ${countColor}`}>
                     {hasCards ? countLabel : ''}
                   </span>
                 </button>
@@ -204,11 +193,8 @@ export default function Library({ notes }: Props) {
         </div>
       </div>
 
-      <div className="mb-3 flex items-end justify-between gap-4">
-        <p className="font-lingiGreeting text-[22px] font-semibold leading-none text-[#243238]">{getSavedCountTitle(selectedDateNoteCount)}</p>
-        <p className="font-lingiText shrink-0 text-right text-[14px] font-normal leading-none text-[#61777B]">
-          {selectedDateNoteCount} {selectedDateNoteCount === 1 ? 'card' : 'cards'}
-        </p>
+      <div className="mb-3">
+        <p className="font-lingiGreeting text-left text-[16px] font-light leading-none text-[#243238]">{getSavedCountTitle(selectedDateNoteCount)}</p>
       </div>
 
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pb-3">
@@ -223,12 +209,12 @@ export default function Library({ notes }: Props) {
             return (
               <article
                 key={note.id}
-                className="rounded-[24px] border border-[rgba(255,255,255,0.72)] bg-[rgba(255,253,245,0.82)] p-4 shadow-[0_18px_42px_rgba(64,93,91,0.10)] backdrop-blur-sm"
+                className="rounded-[18px] border border-[rgba(255,255,255,0.72)] bg-[rgba(255,253,245,0.78)] p-3 backdrop-blur-sm"
               >
-                <div className="mb-3 inline-flex rounded-full bg-[rgba(221,239,233,0.82)] px-3 py-1 text-[12px] font-medium text-[#0E6F74]">
+                <div className="mb-2 inline-flex rounded-full bg-[rgba(221,239,233,0.82)] px-2.5 py-1 text-[11px] font-medium leading-none text-[#0E6F74]">
                   {shortDateFormatter.format(savedDate)} · {timeFormatter.format(savedDate)}
                 </div>
-                <p className="whitespace-pre-wrap text-[15px] leading-[24px] text-[#243238]">{note.text}</p>
+                <p className="line-clamp-2 whitespace-pre-wrap text-[14px] leading-[20px] text-[#243238]">{note.text}</p>
               </article>
             );
           })
