@@ -41,6 +41,22 @@ function normalizeSavedNotes(value: unknown): SavedNote[] {
     .filter((item): item is SavedNote => Boolean(item));
 }
 
+function mergeSavedNotes(...noteLists: SavedNote[][]) {
+  const seen = new Set<string>();
+  return noteLists
+    .flat()
+    .filter((note) => {
+      const key = `${note.id}-${note.savedAt}-${note.text}`;
+      if (seen.has(key)) {
+        return false;
+      }
+
+      seen.add(key);
+      return true;
+    })
+    .sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
+}
+
 export default function HomePage() {
   const [active, setActive] = useState<ActiveView>('home');
   const [note, setNote] = useState('');
@@ -49,9 +65,15 @@ export default function HomePage() {
 
   useEffect(() => {
     try {
-      const rawNotes = window.localStorage.getItem(STORAGE_KEY) ?? window.localStorage.getItem(LEGACY_STORAGE_KEY);
-      if (rawNotes) {
-        setSavedNotes(normalizeSavedNotes(JSON.parse(rawNotes)));
+      const rawNotes = window.localStorage.getItem(STORAGE_KEY);
+      const rawLegacyNotes = window.localStorage.getItem(LEGACY_STORAGE_KEY);
+      const normalizedNotes = rawNotes ? normalizeSavedNotes(JSON.parse(rawNotes)) : [];
+      const normalizedLegacyNotes = rawLegacyNotes ? normalizeSavedNotes(JSON.parse(rawLegacyNotes)) : [];
+      const nextNotes = mergeSavedNotes(normalizedNotes, normalizedLegacyNotes);
+
+      if (nextNotes.length > 0) {
+        setSavedNotes(nextNotes);
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextNotes));
       }
     } catch {
       setSavedNotes([]);

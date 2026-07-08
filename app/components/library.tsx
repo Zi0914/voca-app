@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CalendarDays, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 
 export type SavedNote = {
@@ -70,6 +70,18 @@ function getCalendarTitle(date: Date) {
 export default function Library({ notes }: Props) {
   const [query, setQuery] = useState('');
   const [selectedDate, setSelectedDate] = useState(() => new Date());
+
+  useEffect(() => {
+    if (notes.length === 0 || getNoteCountForDate(notes, selectedDate) > 0) {
+      return;
+    }
+
+    const latestNote = notes.reduce((latest, note) => {
+      return new Date(note.savedAt).getTime() > new Date(latest.savedAt).getTime() ? note : latest;
+    }, notes[0]);
+
+    setSelectedDate(new Date(latestNote.savedAt));
+  }, [notes, selectedDate]);
 
   const visibleWeek = useMemo(() => getVisibleWeek(selectedDate), [selectedDate]);
   const filteredNotes = useMemo(() => {
