@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 
 export type SavedNote = {
   id: string;
@@ -55,24 +55,47 @@ function getCountLabel(count: number) {
     return '';
   }
 
-  if (count === 1) {
-    return '•';
-  }
-
   return count > 9 ? '9+' : `${count}`;
+}
+
+function getDayDifference(date: Date, referenceDate = new Date()) {
+  const day = startOfDay(date).getTime();
+  const referenceDay = startOfDay(referenceDate).getTime();
+  return Math.round((day - referenceDay) / 86400000);
 }
 
 function getCalendarTitle(date: Date) {
   const dateText = calendarTitleFormatter.format(date);
-  return sameDay(date, new Date()) ? `Today, ${dateText}` : dateText;
+  const dayDifference = getDayDifference(date);
+
+  if (dayDifference === 0) {
+    return `Today, ${dateText}`;
+  }
+
+  if (dayDifference === -1) {
+    return `Yesterday, ${dateText}`;
+  }
+
+  return dateText;
+}
+
+function getSavedCountTitle(count: number) {
+  return `Saved ${count} ${count === 1 ? 'card' : 'cards'}`;
+}
+
+function getEmptyStateMessage(date: Date) {
+  return getDayDifference(date) > 0
+    ? 'This day is still ahead. Come back later to save new cards.'
+    : 'No cards saved for this date yet. A fresh day to start capturing new words.';
 }
 
 export default function Library({ notes }: Props) {
   const [query, setQuery] = useState('');
   const [selectedDate, setSelectedDate] = useState(() => new Date());
+  const [hasAutoSelectedDate, setHasAutoSelectedDate] = useState(false);
 
   useEffect(() => {
-    if (notes.length === 0 || getNoteCountForDate(notes, selectedDate) > 0) {
+    if (hasAutoSelectedDate || notes.length === 0 || getNoteCountForDate(notes, selectedDate) > 0) {
       return;
     }
 
@@ -81,9 +104,11 @@ export default function Library({ notes }: Props) {
     }, notes[0]);
 
     setSelectedDate(new Date(latestNote.savedAt));
-  }, [notes, selectedDate]);
+    setHasAutoSelectedDate(true);
+  }, [hasAutoSelectedDate, notes, selectedDate]);
 
   const visibleWeek = useMemo(() => getVisibleWeek(selectedDate), [selectedDate]);
+  const selectedDateNoteCount = useMemo(() => getNoteCountForDate(notes, selectedDate), [notes, selectedDate]);
   const filteredNotes = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
@@ -117,17 +142,7 @@ export default function Library({ notes }: Props) {
       </label>
 
       <div className="mb-5 border-b border-[rgba(97,119,123,0.12)] pb-4">
-        <div className="grid grid-cols-[1fr_40px] items-start gap-2">
-          <div className="min-w-0">
-            <p className="font-lingiText truncate text-[14px] font-normal leading-none text-[#243238]">{getCalendarTitle(selectedDate)}</p>
-          </div>
-
-          <div className="flex justify-end">
-            <div className="flex h-9 w-9 items-center justify-center rounded-[13px] border border-[rgba(0,140,149,0.20)] bg-[rgba(255,253,245,0.72)] text-[#008C95] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]">
-              <CalendarDays size={17} strokeWidth={2.25} />
-            </div>
-          </div>
-        </div>
+        <p className="font-lingiText truncate text-center text-[14px] font-normal leading-none text-[#243238]">{getCalendarTitle(selectedDate)}</p>
 
         <div className="mt-6 grid grid-cols-[24px_1fr_24px] items-center gap-1">
           <button
@@ -142,40 +157,36 @@ export default function Library({ notes }: Props) {
           <div className="grid grid-cols-7 gap-1">
             {visibleWeek.map((date, index) => {
               const isSelected = sameDay(date, selectedDate);
-              const isToday = sameDay(date, new Date());
-              const isFilled = isSelected && !isToday;
               const noteCount = getNoteCountForDate(notes, date);
               const countLabel = getCountLabel(noteCount);
+              const hasCards = noteCount > 0;
+              const isFutureDate = getDayDifference(date) > 0;
+              const dateNumberColor = hasCards
+                ? 'text-[#111111]'
+                : isFutureDate
+                  ? 'text-[#7E8F8C]'
+                  : 'text-[#A8B3B1]';
 
               return (
                 <button
                   key={date.toISOString()}
                   type="button"
-                  onClick={() => setSelectedDate(date)}
+                  onClick={() => {
+                    setHasAutoSelectedDate(true);
+                    setSelectedDate(date);
+                  }}
                   className={`mx-auto flex h-[72px] w-[54px] flex-col items-center justify-center gap-2 rounded-[18px] border transition-colors ${
-                    isFilled
-                      ? 'border-[#008C95] bg-[#008C95] text-white shadow-[0_10px_22px_rgba(0,140,149,0.20)]'
-                      : isToday
-                        ? 'border-[#D7DEDA] bg-white/24 text-[#243238]'
-                        : 'border-transparent bg-transparent text-[#61777B]'
+                    isSelected ? 'border-[#D7DEDA] bg-white/28' : 'border-transparent bg-transparent'
                   }`}
                 >
-                  <span className={`text-[16px] font-medium leading-none ${isFilled ? 'text-white' : ''}`}>
+                  <span className="text-[16px] font-medium leading-none text-[#61777B]">
                     {weekdayLetters[index]}
                   </span>
-                  <span className={`text-[19px] font-extrabold leading-none ${isFilled ? 'text-white' : isToday ? 'text-[#243238]' : 'text-[#9AA9A7]'}`}>
+                  <span className={`font-lingiText text-[13px] font-normal leading-none ${dateNumberColor}`}>
                     {date.getDate()}
                   </span>
-                  <span
-                    className={`flex h-[17px] min-w-[17px] items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none ${
-                      noteCount === 0
-                        ? 'bg-transparent text-transparent'
-                        : isFilled
-                          ? 'bg-white/92 text-[#008C95]'
-                          : 'bg-[rgba(246,207,105,0.48)] text-[#0E6F74]'
-                    }`}
-                  >
-                    {countLabel}
+                  <span className="font-lingiText flex h-[17px] min-w-[17px] items-center justify-center px-1 text-[11px] font-normal leading-none text-[#111111]">
+                    {hasCards ? countLabel : ''}
                   </span>
                 </button>
               );
@@ -194,14 +205,16 @@ export default function Library({ notes }: Props) {
       </div>
 
       <div className="mb-3 flex items-end justify-between gap-4">
-        <p className="font-lingiGreeting text-[22px] font-semibold leading-none text-[#243238]">Save the cards</p>
-        <p className="font-lingiText shrink-0 text-right text-[14px] font-normal leading-none text-[#61777B]">{filteredNotes.length} card</p>
+        <p className="font-lingiGreeting text-[22px] font-semibold leading-none text-[#243238]">{getSavedCountTitle(selectedDateNoteCount)}</p>
+        <p className="font-lingiText shrink-0 text-right text-[14px] font-normal leading-none text-[#61777B]">
+          {selectedDateNoteCount} {selectedDateNoteCount === 1 ? 'card' : 'cards'}
+        </p>
       </div>
 
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pb-3">
         {filteredNotes.length === 0 ? (
           <div className="rounded-[22px] border border-[rgba(255,255,255,0.72)] bg-[rgba(255,253,245,0.74)] px-5 py-6 text-[14px] leading-[22px] text-[#61777B]">
-            {notes.length === 0 ? 'Saved cards will appear here after you catch a note.' : 'No saved cards match this calendar view.'}
+            {getEmptyStateMessage(selectedDate)}
           </div>
         ) : (
           filteredNotes.map((note) => {
