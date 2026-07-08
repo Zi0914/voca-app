@@ -4,7 +4,7 @@ import './globals.css';
 
 const fredoka = Fredoka({
   subsets: ['latin'],
-  weight: '500',
+  weight: ['500', '700'],
   variable: '--font-lingi-greeting',
 });
 
