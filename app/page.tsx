@@ -4,16 +4,59 @@ import { useEffect, useState } from 'react';
 import HomeHeader from './components/home-header';
 import HomeCaptureCard from './components/home-capture-card';
 import BottomNav from './components/bottom-nav';
-import Library from './components/library';
+import Library, { type SavedNote } from './components/library';
 import WritingPage from './components/writing-page';
-import { X } from 'lucide-react';
 
 type ActiveView = 'home' | 'library' | 'note';
+const STORAGE_KEY = 'voca_notes';
+const LEGACY_STORAGE_KEY = 'lingi_notes';
+
+function normalizeSavedNotes(value: unknown): SavedNote[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => {
+      if (!item || typeof item !== 'object') {
+        return null;
+      }
+
+      const note = item as { id?: unknown; text?: unknown; savedAt?: unknown; addedAt?: unknown };
+      if (typeof note.text !== 'string') {
+        return null;
+      }
+
+      return {
+        id: typeof note.id === 'string' ? note.id : `${Date.now()}-${Math.random()}`,
+        text: note.text,
+        savedAt:
+          typeof note.savedAt === 'string'
+            ? note.savedAt
+            : typeof note.addedAt === 'string'
+              ? note.addedAt
+              : new Date().toISOString(),
+      };
+    })
+    .filter((item): item is SavedNote => Boolean(item));
+}
 
 export default function HomePage() {
   const [active, setActive] = useState<ActiveView>('home');
   const [note, setNote] = useState('');
+  const [savedNotes, setSavedNotes] = useState<SavedNote[]>([]);
   const [showSavedPopup, setShowSavedPopup] = useState(false);
+
+  useEffect(() => {
+    try {
+      const rawNotes = window.localStorage.getItem(STORAGE_KEY) ?? window.localStorage.getItem(LEGACY_STORAGE_KEY);
+      if (rawNotes) {
+        setSavedNotes(normalizeSavedNotes(JSON.parse(rawNotes)));
+      }
+    } catch {
+      setSavedNotes([]);
+    }
+  }, []);
 
   useEffect(() => {
     if (!showSavedPopup) {
@@ -24,6 +67,27 @@ export default function HomePage() {
     return () => window.clearTimeout(timeout);
   }, [showSavedPopup]);
 
+  const handleSaved = (text: string) => {
+    const savedNote = {
+      id: `${Date.now()}`,
+      text,
+      savedAt: new Date().toISOString(),
+    };
+
+    setSavedNotes((currentNotes) => {
+      const nextNotes = [savedNote, ...currentNotes];
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextNotes));
+      } catch {
+        // Local persistence is best-effort for this prototype.
+      }
+      return nextNotes;
+    });
+    setActive('home');
+    setNote('');
+    setShowSavedPopup(true);
+  };
+
   if (active === 'note') {
     return (
       <main className="mx-auto min-h-screen w-full max-w-[480px] bg-transparent">
@@ -31,32 +95,25 @@ export default function HomePage() {
           note={note}
           onNoteChange={setNote}
           onBack={() => setActive('home')}
-          onSaved={() => {
-            setActive('home');
-            setShowSavedPopup(true);
-          }}
+          onSaved={handleSaved}
         />
       </main>
     );
   }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-[480px] flex-col bg-transparent px-5 pb-[calc(128px+env(safe-area-inset-bottom))] pt-[max(1.25rem,env(safe-area-inset-top))] min-[400px]:px-6">
+    <main className="mx-auto flex min-h-screen w-full max-w-[480px] flex-col bg-transparent px-5 pb-[calc(104px_+_env(safe-area-inset-bottom))] pt-[max(1.25rem,env(safe-area-inset-top))] min-[400px]:px-6">
       <HomeHeader />
-      {active === 'home' ? <HomeCaptureCard note={note} onOpenNote={() => setActive('note')} /> : <Library />}
+      {active === 'home' ? (
+        <HomeCaptureCard note={note} onOpenNote={() => setActive('note')} />
+      ) : (
+        <Library notes={savedNotes} />
+      )}
       {showSavedPopup ? (
-        <div className="fixed bottom-[calc(124px+env(safe-area-inset-bottom))] left-0 right-0 z-30 mx-auto flex w-full max-w-[480px] justify-center px-5 min-[400px]:px-6">
-          <div className="lingi-saved-popup relative w-full max-w-[432px]">
-            <button
-              type="button"
-              onClick={() => setShowSavedPopup(false)}
-              className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full text-[#61777B] transition-colors hover:bg-[#DDEFE9]/70 hover:text-[#243238]"
-              aria-label="Dismiss saved notification"
-            >
-              <X size={16} />
-            </button>
-            <p className="pr-8 text-left text-[15px] font-medium text-[#243238]">Saved to Library</p>
-            <p className="mt-1 pr-8 text-left text-[13px] text-[#61777B]">You can find it in Library anytime.</p>
+        <div className="fixed bottom-[calc(112px_+_env(safe-area-inset-bottom))] left-0 right-0 z-30 mx-auto flex w-full max-w-[480px] justify-center px-5 min-[400px]:px-6">
+          <div className="lingi-saved-popup w-full max-w-[432px]">
+            <p className="text-left text-[15px] font-medium text-[#243238]">Saved to Library</p>
+            <p className="mt-1 text-left text-[13px] leading-[18px] text-[#61777B]">You can find it in Library anytime.</p>
           </div>
         </div>
       ) : null}

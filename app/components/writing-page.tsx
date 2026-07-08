@@ -7,7 +7,7 @@ type Props = {
   note: string;
   onNoteChange: (value: string) => void;
   onBack: () => void;
-  onSaved: () => void;
+  onSaved: (text: string) => void;
 };
 
 const dateFormatter = new Intl.DateTimeFormat('en-US', {
@@ -33,28 +33,17 @@ export default function WritingPage({ note, onNoteChange, onBack, onSaved }: Pro
     }
 
     setIsSaving(true);
-    const entry = { id: `${Date.now()}`, text: trimmedNote, addedAt: new Date().toISOString() };
-
-    try {
-      const raw = localStorage.getItem('lingi_notes');
-      const arr = raw ? JSON.parse(raw) : [];
-      arr.unshift(entry);
-      localStorage.setItem('lingi_notes', JSON.stringify(arr));
-    } catch (e) {
-      // Saving is best-effort for this local prototype.
-    }
 
     window.setTimeout(() => {
       setIsSaving(false);
-      onNoteChange('');
-      onSaved();
+      onSaved(trimmedNote);
     }, 560);
   };
 
   return (
-    <section className="flex min-h-screen w-full flex-col px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-[max(1.25rem,env(safe-area-inset-top))] min-[400px]:px-6">
+    <section className="voca-soft-bg fixed inset-0 z-40 mx-auto flex h-[100dvh] w-full max-w-[480px] flex-col px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-[max(1.25rem,env(safe-area-inset-top))] min-[400px]:px-6">
       <div className={`flex min-h-0 flex-1 flex-col overflow-hidden rounded-[30px] border border-[rgba(255,255,255,0.72)] bg-[rgba(255,253,245,0.78)] p-5 shadow-lingi backdrop-blur-sm ${isSaving ? 'animate-note-save-away' : ''}`}>
-        <div className="mb-4 grid h-[48px] shrink-0 grid-cols-[72px_1fr_72px] items-center gap-3">
+        <div className="mb-4 grid h-[48px] shrink-0 grid-cols-[72px_1fr_72px] items-center">
           <button
             type="button"
             onClick={onBack}
@@ -81,7 +70,7 @@ export default function WritingPage({ note, onNoteChange, onBack, onSaved }: Pro
             value={note}
             onChange={(event) => onNoteChange(event.target.value)}
             placeholder="Type here to catch what you want to remember..."
-            className="h-full w-full resize-none overflow-y-auto bg-transparent text-[16px] leading-[28px] text-[#243238] outline-none placeholder:text-[#61777B]"
+            className="h-full w-full resize-none overflow-y-auto bg-transparent text-left text-[14px] leading-[28px] text-[#243238] outline-none placeholder:text-[#61777B]"
           />
         </div>
       </div>

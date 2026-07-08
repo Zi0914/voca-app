@@ -90,6 +90,10 @@ main {
   font-family: var(--font-lingi-greeting);
 }
 
+.font-lingiText {
+  font-family: var(--font-lingi-text);
+}
+
 .shadow-lingi {
   box-shadow: 0 26px 58px rgba(64,93,91,0.14);
 }
