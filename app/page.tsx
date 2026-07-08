@@ -10,21 +10,36 @@ import WritingPage from './components/writing-page';
 type ActiveView = 'home' | 'library' | 'note';
 const STORAGE_KEY = 'voca_notes';
 const LEGACY_STORAGE_KEY = 'lingi_notes';
+const REPLACED_MOCK_NOTE_IDS = new Set([
+  'mock-2026-07-08-serendipity',
+  'mock-2026-07-08-linger',
+  'mock-2026-07-08-tender',
+]);
 const MOCK_SAVED_NOTES: SavedNote[] = [
   {
-    id: 'mock-2026-07-08-serendipity',
+    id: 'mock-2026-07-06-serendipity',
     text: 'serendipity - finding something good by accident',
+    savedAt: '2026-07-06T09:18:00.000-07:00',
+  },
+  {
+    id: 'mock-2026-07-07-linger',
+    text: 'linger - to stay a little longer than expected',
+    savedAt: '2026-07-07T11:42:00.000-07:00',
+  },
+  {
+    id: 'mock-2026-07-07-tender',
+    text: 'tender - gentle, kind, or easy to hurt',
+    savedAt: '2026-07-07T15:06:00.000-07:00',
+  },
+  {
+    id: 'mock-2026-07-08-glimpse',
+    text: 'glimpse - a quick look',
     savedAt: '2026-07-08T09:18:00.000-07:00',
   },
   {
-    id: 'mock-2026-07-08-linger',
-    text: 'linger - to stay a little longer than expected',
+    id: 'mock-2026-07-08-cherish',
+    text: 'cherish - to keep something dear in your heart',
     savedAt: '2026-07-08T11:42:00.000-07:00',
-  },
-  {
-    id: 'mock-2026-07-08-tender',
-    text: 'tender - gentle, kind, or easy to hurt',
-    savedAt: '2026-07-08T15:06:00.000-07:00',
   },
 ];
 
@@ -84,8 +99,12 @@ export default function HomePage() {
     try {
       const rawNotes = window.localStorage.getItem(STORAGE_KEY);
       const rawLegacyNotes = window.localStorage.getItem(LEGACY_STORAGE_KEY);
-      const normalizedNotes = rawNotes ? normalizeSavedNotes(JSON.parse(rawNotes)) : [];
-      const normalizedLegacyNotes = rawLegacyNotes ? normalizeSavedNotes(JSON.parse(rawLegacyNotes)) : [];
+      const normalizedNotes = rawNotes
+        ? normalizeSavedNotes(JSON.parse(rawNotes)).filter((note) => !REPLACED_MOCK_NOTE_IDS.has(note.id))
+        : [];
+      const normalizedLegacyNotes = rawLegacyNotes
+        ? normalizeSavedNotes(JSON.parse(rawLegacyNotes)).filter((note) => !REPLACED_MOCK_NOTE_IDS.has(note.id))
+        : [];
       const nextNotes = mergeSavedNotes(normalizedNotes, normalizedLegacyNotes, MOCK_SAVED_NOTES);
 
       if (nextNotes.length > 0) {
