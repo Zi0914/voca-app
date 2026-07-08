@@ -32,12 +32,12 @@ export default function HomeCaptureCard({ note, onOpenNote }: Props) {
         <img
           src="/lingi-parrot.png"
           alt="Voca parrot"
-          className="pointer-events-none absolute right-[16px] top-[12px] h-[64px] w-[56px] drop-shadow-[0_10px_20px_rgba(0,0,0,0.08)] parrot-bob"
+          className="pointer-events-none absolute right-[28px] top-[26px] z-10 h-[64px] w-[64px] object-contain drop-shadow-[0_8px_14px_rgba(0,0,0,0.08)]"
         />
         <div className="mt-3 self-start text-[12px] font-medium leading-none text-[#0E6F74]">{dateText}</div>
 
         <div className="mt-4 flex min-h-0 flex-1 flex-col rounded-[18px] bg-[rgba(221,239,233,0.82)] p-6">
-          <div className="pt-1 text-[16px] leading-[28px] text-[#61777B]">
+          <div className="pt-1 text-left text-[13px] leading-[28px] text-[#61777B]">
             {note.trim() ? note.trim() : 'Type here to catch what you want to remember...'}
           </div>
         </div>
