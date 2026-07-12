@@ -10,6 +10,7 @@ import WritingPage from './components/writing-page';
 type ActiveView = 'home' | 'library' | 'note';
 const STORAGE_KEY = 'voca_notes';
 const LEGACY_STORAGE_KEY = 'lingi_notes';
+const DELETED_NOTE_IDS_KEY = 'voca_deleted_note_ids';
 const REPLACED_MOCK_NOTE_IDS = new Set([
   'mock-2026-07-08-serendipity',
   'mock-2026-07-08-linger',
@@ -99,13 +100,19 @@ export default function HomePage() {
     try {
       const rawNotes = window.localStorage.getItem(STORAGE_KEY);
       const rawLegacyNotes = window.localStorage.getItem(LEGACY_STORAGE_KEY);
+      const rawDeletedNoteIds = window.localStorage.getItem(DELETED_NOTE_IDS_KEY);
+      const deletedNoteIds = new Set<string>(
+        rawDeletedNoteIds && Array.isArray(JSON.parse(rawDeletedNoteIds)) ? JSON.parse(rawDeletedNoteIds) : [],
+      );
       const normalizedNotes = rawNotes
         ? normalizeSavedNotes(JSON.parse(rawNotes)).filter((note) => !REPLACED_MOCK_NOTE_IDS.has(note.id))
         : [];
       const normalizedLegacyNotes = rawLegacyNotes
         ? normalizeSavedNotes(JSON.parse(rawLegacyNotes)).filter((note) => !REPLACED_MOCK_NOTE_IDS.has(note.id))
         : [];
-      const nextNotes = mergeSavedNotes(normalizedNotes, normalizedLegacyNotes, MOCK_SAVED_NOTES);
+      const nextNotes = mergeSavedNotes(normalizedNotes, normalizedLegacyNotes, MOCK_SAVED_NOTES).filter(
+        (note) => !deletedNoteIds.has(note.id),
+      );
 
       if (nextNotes.length > 0) {
         setSavedNotes(nextNotes);
@@ -146,6 +153,26 @@ export default function HomePage() {
     setShowSavedPopup(true);
   };
 
+  const handleDeleteNote = (id: string) => {
+    setSavedNotes((currentNotes) => {
+      const nextNotes = currentNotes.filter((note) => note.id !== id);
+
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextNotes));
+        const rawDeletedNoteIds = window.localStorage.getItem(DELETED_NOTE_IDS_KEY);
+        const deletedNoteIds = new Set<string>(
+          rawDeletedNoteIds && Array.isArray(JSON.parse(rawDeletedNoteIds)) ? JSON.parse(rawDeletedNoteIds) : [],
+        );
+        deletedNoteIds.add(id);
+        window.localStorage.setItem(DELETED_NOTE_IDS_KEY, JSON.stringify([...deletedNoteIds]));
+      } catch {
+        // Local persistence is best-effort for this prototype.
+      }
+
+      return nextNotes;
+    });
+  };
+
   if (active === 'note') {
     return (
       <main className="mx-auto min-h-screen w-full max-w-[480px] bg-transparent">
@@ -165,7 +192,7 @@ export default function HomePage() {
       {active === 'home' ? (
         <HomeCaptureCard note={note} onOpenNote={() => setActive('note')} />
       ) : (
-        <Library notes={savedNotes} />
+        <Library notes={savedNotes} onDeleteNote={handleDeleteNote} />
       )}
       {showSavedPopup ? (
         <div className="fixed bottom-[calc(112px_+_env(safe-area-inset-bottom))] left-0 right-0 z-30 mx-auto flex w-full max-w-[480px] justify-center px-5 min-[400px]:px-6">

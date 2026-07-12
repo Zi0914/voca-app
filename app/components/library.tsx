@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 
 export type SavedNote = {
   id: string;
@@ -11,6 +11,7 @@ export type SavedNote = {
 
 type Props = {
   notes: SavedNote[];
+  onDeleteNote: (id: string) => void;
 };
 
 const calendarTitleFormatter = new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric' });
@@ -89,7 +90,7 @@ function getEmptyStateMessage(date: Date) {
     : 'No cards saved for this date yet. A fresh day to start capturing new words.';
 }
 
-export default function Library({ notes }: Props) {
+export default function Library({ notes, onDeleteNote }: Props) {
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [hasAutoSelectedDate, setHasAutoSelectedDate] = useState(false);
 
@@ -211,8 +212,18 @@ export default function Library({ notes }: Props) {
                 key={note.id}
                 className="rounded-[18px] border border-[rgba(255,255,255,0.72)] bg-[rgba(255,253,245,0.78)] p-3 backdrop-blur-sm"
               >
-                <div className="mb-2 inline-flex rounded-full bg-[rgba(221,239,233,0.82)] px-2.5 py-1 text-[11px] font-medium leading-none text-[#0E6F74]">
-                  {shortDateFormatter.format(savedDate)} · {timeFormatter.format(savedDate)}
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <div className="inline-flex rounded-full bg-[rgba(221,239,233,0.82)] px-2.5 py-1 text-[11px] font-medium leading-none text-[#0E6F74]">
+                    {shortDateFormatter.format(savedDate)} · {timeFormatter.format(savedDate)}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onDeleteNote(note.id)}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#8A7771] transition-colors hover:bg-[rgba(178,91,73,0.1)] hover:text-[#A64F3F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#008C95] focus-visible:ring-offset-2"
+                    aria-label={`Delete card: ${note.text}`}
+                  >
+                    <Trash2 size={17} strokeWidth={2} aria-hidden="true" />
+                  </button>
                 </div>
                 <p className="line-clamp-2 whitespace-pre-wrap text-[14px] leading-[20px] text-[#243238]">{note.text}</p>
               </article>
