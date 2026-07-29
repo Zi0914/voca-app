@@ -5,22 +5,22 @@ import { ArrowLeft } from 'lucide-react';
 
 type Props = {
   note: string;
+  mode?: 'create' | 'draft' | 'edit';
+  noteDate?: string;
   onNoteChange: (value: string) => void;
   onBack: () => void;
   onSaved: (text: string) => void;
 };
 
 const dateFormatter = new Intl.DateTimeFormat('en-US', {
-  weekday: 'long',
   month: 'long',
-  day: '2-digit',
-  year: 'numeric',
+  day: 'numeric',
 });
 
-export default function WritingPage({ note, onNoteChange, onBack, onSaved }: Props) {
+export default function WritingPage({ note, mode = 'create', noteDate, onNoteChange, onBack, onSaved }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const dateText = useMemo(() => dateFormatter.format(new Date()), []);
+  const dateText = useMemo(() => dateFormatter.format(noteDate ? new Date(noteDate) : new Date()), [noteDate]);
 
   useEffect(() => {
     textareaRef.current?.focus();
@@ -41,38 +41,42 @@ export default function WritingPage({ note, onNoteChange, onBack, onSaved }: Pro
   };
 
   return (
-    <section className="voca-soft-bg fixed inset-0 z-40 mx-auto flex h-[100dvh] w-full max-w-[480px] flex-col px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-[max(1.25rem,env(safe-area-inset-top))] min-[400px]:px-6">
-      <div className={`flex min-h-0 flex-1 flex-col overflow-hidden rounded-[30px] border border-[rgba(255,255,255,0.72)] bg-[rgba(255,253,245,0.78)] p-5 shadow-lingi backdrop-blur-sm ${isSaving ? 'animate-note-save-away' : ''}`}>
-        <div className="mb-4 grid h-[48px] shrink-0 grid-cols-[72px_1fr_72px] items-center">
-          <button
-            type="button"
-            onClick={onBack}
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-[#008C95] bg-white/28 text-[#008C95]"
-            aria-label="Back"
-          >
-            <ArrowLeft size={16} />
-          </button>
-          <div className="overflow-hidden text-ellipsis whitespace-nowrap text-center text-[11px] font-medium leading-none text-[#0E6F74]">
-            {dateText}
-          </div>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={!note.trim() || isSaving}
-            className="inline-flex h-8 items-center justify-center rounded-[12px] px-5 text-[13px] font-medium text-white transition-colors disabled:bg-[#B9C8C3] enabled:bg-[#008C95]"
-          >
-            Save
-          </button>
-        </div>
-        <div className="min-h-0 flex-1 overflow-hidden rounded-[18px] bg-[rgba(221,239,233,0.82)] p-5">
-          <textarea
-            ref={textareaRef}
-            value={note}
-            onChange={(event) => onNoteChange(event.target.value)}
-            placeholder="Type here to catch what you want to remember..."
-            className="h-full w-full resize-none overflow-y-auto bg-transparent text-left text-[14px] leading-[28px] text-[#243238] outline-none placeholder:text-[#61777B]"
-          />
-        </div>
+    <section
+      className={`voca-editor-page mx-auto flex min-h-[100dvh] w-full max-w-[480px] flex-col pb-[max(1.5rem,env(safe-area-inset-bottom))] ${
+        isSaving ? 'animate-note-save-away' : ''
+      }`}
+    >
+      <header className="voca-editor-header grid shrink-0 grid-cols-[72px_1fr_72px] items-center border-b border-[rgba(97,119,123,0.12)] px-5 pb-4 pt-[max(1rem,env(safe-area-inset-top))] min-[400px]:px-6">
+        <button
+          type="button"
+          onClick={onBack}
+          className="-ml-2 inline-flex h-10 w-10 items-center justify-center rounded-full text-[#008C95] transition active:scale-[0.96] active:bg-white/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#008C95]"
+          aria-label="Back"
+        >
+          <ArrowLeft size={21} strokeWidth={2.2} />
+        </button>
+        <p className="truncate px-1 text-center text-[10px] font-semibold uppercase tracking-[0.1em] text-[#0E6F74]">
+          {mode === 'edit' ? 'Editing' : mode === 'draft' ? 'Draft' : 'Today'} · {dateText}
+        </p>
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={!note.trim() || isSaving}
+          className="inline-flex h-9 items-center justify-center rounded-full px-4 text-[13px] font-semibold text-white transition-colors disabled:bg-[#B9C8C3] enabled:bg-[#008C95] enabled:active:bg-[#007B83] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#008C95] focus-visible:ring-offset-2"
+        >
+          Save
+        </button>
+      </header>
+
+      <div className="flex min-h-0 flex-1 flex-col px-5 min-[400px]:px-6">
+        <textarea
+          ref={textareaRef}
+          value={note}
+          onChange={(event) => onNoteChange(event.target.value)}
+          placeholder="Type a word, phrase, or sentence you’d like to remember here..."
+          aria-label="Vocabulary note"
+          className="min-h-[18rem] w-full flex-1 resize-none overflow-y-auto bg-transparent py-7 text-left text-[14px] leading-[24px] text-[#243238] outline-none placeholder:text-[#61777B]"
+        />
       </div>
     </section>
   );

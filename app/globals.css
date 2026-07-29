@@ -15,15 +15,26 @@ html {
 body {
   min-height: 100%;
   margin: 0;
-  background:
-    radial-gradient(circle at 12% -6%, rgba(145, 197, 230, 0.46), transparent 19rem),
-    radial-gradient(circle at 92% 8%, rgba(246, 207, 105, 0.32), transparent 18rem),
-    radial-gradient(circle at 12% 76%, rgba(134, 199, 141, 0.22), transparent 18rem),
-    linear-gradient(180deg, #fbf7ec 0%, #eef7f4 48%, #f8eedf 100%);
+  background: #fefefe;
   color: #243238;
   font-family: var(--font-lingi-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.voca-editor-page {
+  background: #f7fbfa;
+}
+
+.voca-editor-header {
+  background: linear-gradient(105deg, #ddefe9 0%, #e4f1f4 58%, #f8edce 100%);
+}
+
+.voca-capture-frame {
+  background:
+    radial-gradient(circle at 50% 48%, rgba(176, 216, 235, 0.42) 0, rgba(176, 216, 235, 0.2) 17%, transparent 36%),
+    radial-gradient(circle at 8% 92%, rgba(250, 220, 139, 0.25) 0, rgba(250, 220, 139, 0.1) 18%, transparent 38%),
+    linear-gradient(155deg, rgba(226, 243, 237, 0.96), rgba(211, 235, 228, 0.9));
 }
 
 button,
@@ -45,16 +56,14 @@ textarea {
   0% {
     opacity: 1;
     transform: translateX(0) scale(1);
-    transform-origin: 88% 50%;
   }
-  45% {
+  50% {
     opacity: 1;
-    transform: translateX(14px) scale(0.94);
+    transform: translateX(10px) scale(0.985);
   }
   100% {
     opacity: 0;
-    transform: translateX(58%) scale(0.42);
-    transform-origin: 100% 50%;
+    transform: translateX(18%) scale(0.97);
   }
 }
 
