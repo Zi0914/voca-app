@@ -304,10 +304,10 @@ export default function HomePage() {
 
   return (
     <main
-      className={`mx-auto flex h-[100dvh] min-h-0 w-full max-w-[480px] flex-col overflow-hidden bg-transparent px-5 pt-[max(1.25rem,env(safe-area-inset-top))] min-[400px]:px-6 ${
+      className={`mx-auto flex h-[100dvh] min-h-0 w-full max-w-[480px] flex-col overflow-hidden bg-transparent px-3 pt-[max(1.25rem,env(safe-area-inset-top))] min-[400px]:px-4 ${
         active === 'home'
-          ? 'pb-[calc(166px_+_env(safe-area-inset-bottom))]'
-          : 'pb-[calc(106px_+_env(safe-area-inset-bottom))]'
+          ? 'pb-[calc(144px_+_env(safe-area-inset-bottom))]'
+          : 'pb-0'
       }`}
     >
       {active === 'home' ? (
@@ -327,7 +327,7 @@ export default function HomePage() {
         />
       )}
       {showSavedPopup ? (
-        <div className="fixed bottom-[calc(112px_+_env(safe-area-inset-bottom))] left-0 right-0 z-30 mx-auto flex w-full max-w-[480px] justify-center px-5 min-[400px]:px-6">
+        <div className="fixed bottom-[calc(112px_+_env(safe-area-inset-bottom))] left-0 right-0 z-30 mx-auto flex w-full max-w-[480px] justify-center px-3 min-[400px]:px-4">
           <div className="lingi-saved-popup w-full max-w-[432px]">
             <p className="text-left text-[15px] font-medium text-[#243238]">
               {savedPopupMode === 'updated' ? 'Note updated' : 'Saved to Library'}

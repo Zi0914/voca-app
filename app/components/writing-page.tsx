@@ -46,7 +46,7 @@ export default function WritingPage({ note, mode = 'create', noteDate, onNoteCha
         isSaving ? 'animate-note-save-away' : ''
       }`}
     >
-      <header className="voca-editor-header grid shrink-0 grid-cols-[72px_1fr_72px] items-center border-b border-[rgba(97,119,123,0.12)] px-5 pb-4 pt-[max(1rem,env(safe-area-inset-top))] min-[400px]:px-6">
+      <header className="voca-editor-header grid shrink-0 grid-cols-[72px_1fr_72px] items-center border-b border-[rgba(97,119,123,0.12)] px-3 pb-4 pt-[max(1rem,env(safe-area-inset-top))] min-[400px]:px-4">
         <button
           type="button"
           onClick={onBack}
@@ -55,7 +55,7 @@ export default function WritingPage({ note, mode = 'create', noteDate, onNoteCha
         >
           <ArrowLeft size={21} strokeWidth={2.2} />
         </button>
-        <p className="truncate px-1 text-center text-[10px] font-semibold uppercase tracking-[0.1em] text-[#0E6F74]">
+        <p className="truncate px-1 text-center text-[12px] font-semibold uppercase tracking-[0.1em] text-[#0E6F74]">
           {mode === 'edit' ? 'Editing' : mode === 'draft' ? 'Draft' : 'Today'} · {dateText}
         </p>
         <button
@@ -68,14 +68,14 @@ export default function WritingPage({ note, mode = 'create', noteDate, onNoteCha
         </button>
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col px-5 min-[400px]:px-6">
+      <div className="flex min-h-0 flex-1 flex-col px-3 min-[400px]:px-4">
         <textarea
           ref={textareaRef}
           value={note}
           onChange={(event) => onNoteChange(event.target.value)}
           placeholder="Type a word, phrase, or sentence you’d like to remember here..."
           aria-label="Vocabulary note"
-          className="min-h-[18rem] w-full flex-1 resize-none overflow-y-auto bg-transparent py-7 text-left text-[14px] leading-[24px] text-[#243238] outline-none placeholder:text-[#61777B]"
+          className="voca-note-input min-h-[18rem] w-full flex-1 resize-none overflow-y-auto bg-transparent py-7 text-left text-[14px] leading-[20px] text-black outline-none placeholder:text-[#61777B]"
         />
       </div>
     </section>

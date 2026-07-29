@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ArrowRight,
   CalendarDays,
@@ -89,23 +89,6 @@ function getNoteCountForDate(notes: SavedNote[], date: Date) {
   return notes.filter((note) => sameDay(new Date(note.savedAt), date)).length;
 }
 
-function splitNoteText(text: string) {
-  const dashIndex = text.indexOf(' - ');
-
-  if (dashIndex > 0) {
-    return {
-      title: text.slice(0, dashIndex).trim(),
-      detail: text.slice(dashIndex + 3).trim(),
-    };
-  }
-
-  const [firstLine, ...remainingLines] = text.split('\n');
-  return {
-    title: firstLine.trim(),
-    detail: remainingLines.join('\n').trim(),
-  };
-}
-
 export default function Library({
   notes,
   draftText,
@@ -131,6 +114,26 @@ export default function Library({
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [isDraftMenuOpen, setIsDraftMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!openMenuId && !isDraftMenuOpen) {
+      return;
+    }
+
+    const closeMenusOutside = (event: PointerEvent) => {
+      const target = event.target;
+
+      if (target instanceof Element && target.closest('[data-library-menu]')) {
+        return;
+      }
+
+      setOpenMenuId(null);
+      setIsDraftMenuOpen(false);
+    };
+
+    document.addEventListener('pointerdown', closeMenusOutside);
+    return () => document.removeEventListener('pointerdown', closeMenusOutside);
+  }, [openMenuId, isDraftMenuOpen]);
 
   const visibleMonthDays = useMemo(() => getVisibleMonthDays(calendarMonth), [calendarMonth]);
   const filteredNotes = useMemo(() => {
@@ -217,11 +220,11 @@ export default function Library({
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search saved notes..."
             aria-label="Search saved notes"
-            className="min-w-0 flex-1 bg-transparent text-[14px] text-[#243238] outline-none placeholder:text-[#7B8E8B]"
+            className="min-w-0 flex-1 bg-transparent text-[16px] text-[#243238] outline-none placeholder:text-[#7B8E8B]"
           />
         </label>
 
-        <div className="mt-12 flex items-center justify-between gap-3">
+        <div className="mt-8 flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2">
             <button
               type="button"
@@ -231,8 +234,8 @@ export default function Library({
               }}
               className={`inline-flex h-9 items-center justify-center rounded-full px-4 text-[13px] font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#008C95] focus-visible:ring-offset-2 ${
                 filter === 'all'
-                  ? 'border border-[#008C95] bg-[#008C95] text-white'
-                  : 'border border-[#008C95] bg-[#FEFEFE] text-[#61777B]'
+                  ? 'border border-[rgba(0,140,149,0.42)] bg-[#E4EEF1] text-[#0E6F74]'
+                  : 'border border-[rgba(0,140,149,0.42)] bg-transparent text-[#61777B]'
               }`}
             >
               All
@@ -245,8 +248,8 @@ export default function Library({
               }}
               className={`inline-flex h-9 items-center justify-center rounded-full px-4 text-[13px] font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#008C95] focus-visible:ring-offset-2 ${
                 filter === 'week'
-                  ? 'border border-[#008C95] bg-[#008C95] text-white'
-                  : 'border border-[#008C95] bg-[#FEFEFE] text-[#61777B]'
+                  ? 'border border-[rgba(0,140,149,0.42)] bg-[#E4EEF1] text-[#0E6F74]'
+                  : 'border border-[rgba(0,140,149,0.42)] bg-transparent text-[#61777B]'
               }`}
             >
               This week
@@ -259,8 +262,8 @@ export default function Library({
               }}
               className={`inline-flex h-9 items-center justify-center gap-1.5 rounded-full px-4 text-[13px] font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#008C95] focus-visible:ring-offset-2 ${
                 filter === 'date'
-                  ? 'border border-[#008C95] bg-[#008C95] text-white'
-                  : 'border border-[#008C95] bg-[#FEFEFE] text-[#61777B]'
+                  ? 'border border-[rgba(0,140,149,0.42)] bg-[#E4EEF1] text-[#0E6F74]'
+                  : 'border border-[rgba(0,140,149,0.42)] bg-transparent text-[#61777B]'
               }`}
             >
               <CalendarDays size={16} strokeWidth={2} aria-hidden="true" />
@@ -292,7 +295,7 @@ export default function Library({
               role="dialog"
               aria-modal="true"
               aria-label="Choose a date"
-              className="absolute inset-x-0 bottom-0 rounded-t-[28px] border-t border-[rgba(0,140,149,0.16)] bg-[#FEFEFE] px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-18px_46px_rgba(64,93,91,0.14)] min-[400px]:px-6"
+              className="absolute inset-x-0 bottom-0 rounded-t-[28px] border-t border-[rgba(0,140,149,0.16)] bg-[#FEFEFE] px-3 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-18px_46px_rgba(64,93,91,0.14)] min-[400px]:px-4"
             >
               <div className="mx-auto h-1 w-10 rounded-full bg-[#CAD8D5]" aria-hidden="true" />
               <div className="mt-3 flex h-10 items-center justify-between">
@@ -400,7 +403,7 @@ export default function Library({
         ) : null}
       </div>
 
-      <div className="mt-6 min-h-0 flex-1 overflow-y-auto pb-[30px]">
+      <div className="hide-scrollbar mt-6 min-h-0 flex-1 overflow-y-auto">
         {groupedNotes.length === 0 && !showDraft ? (
           <div className="flex flex-col items-center rounded-[22px] border border-[rgba(0,140,149,0.16)] bg-[#EAF4F1] px-6 py-7 text-center">
             <img
@@ -434,7 +437,7 @@ export default function Library({
             {showDraft ? (
               <section>
                 <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#61777B]">Draft</h2>
-                <article className="relative rounded-[12px] border border-dashed border-[rgba(0,140,149,0.28)] bg-[#F2F4F3] px-4 py-4">
+                <article className="relative rounded-[12px] border border-dashed border-[rgba(0,140,149,0.42)] bg-transparent px-4 py-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#61777B]">
@@ -447,6 +450,7 @@ export default function Library({
                     <button
                       type="button"
                       onClick={() => setIsDraftMenuOpen((isOpen) => !isOpen)}
+                      data-library-menu
                       className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#61777B] active:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#008C95]"
                       aria-label="More actions for draft"
                       aria-expanded={isDraftMenuOpen}
@@ -458,14 +462,17 @@ export default function Library({
                   <button
                     type="button"
                     onClick={onContinueDraft}
-                    className="mt-4 inline-flex h-9 items-center justify-center gap-2 rounded-full border border-[#008C95] bg-[#FEFEFE] px-4 text-[13px] font-semibold leading-none text-[#008C95] transition-colors active:bg-[#EAF7F4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#008C95] focus-visible:ring-offset-2"
+                    className="mt-4 inline-flex h-9 items-center justify-center gap-2 rounded-full bg-[#008C95] px-4 text-[13px] font-semibold leading-none text-white transition-colors active:bg-[#007B83] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#008C95] focus-visible:ring-offset-2"
                   >
                     Keep editing
                     <ArrowRight size={15} strokeWidth={2.2} aria-hidden="true" />
                   </button>
 
                   {isDraftMenuOpen ? (
-                    <div className="absolute right-3 top-12 z-10 min-w-[148px] rounded-[14px] border border-[rgba(0,140,149,0.12)] bg-[#FEFEFE] p-1.5 shadow-[0_12px_28px_rgba(64,93,91,0.14)]">
+                    <div
+                      data-library-menu
+                      className="absolute right-3 top-12 z-10 min-w-[148px] rounded-[14px] border border-[rgba(0,140,149,0.12)] bg-[#FEFEFE] p-1.5 shadow-[0_12px_28px_rgba(64,93,91,0.14)]"
+                    >
                       <button
                         type="button"
                         onClick={() => {
@@ -490,31 +497,24 @@ export default function Library({
                 </h2>
                 <div className="grid grid-cols-2 gap-3">
                   {group.notes.map((note) => {
-                    const content = splitNoteText(note.text);
                     const isMenuOpen = openMenuId === note.id;
 
                     return (
                       <article
                         key={note.id}
-                        className="relative aspect-square min-w-0 rounded-[12px] border border-[rgba(0,140,149,0.18)] bg-[#E7F3EF] px-4 py-4"
+                        className="relative h-[136px] min-w-0 rounded-[12px] border border-transparent bg-[linear-gradient(145deg,#ECF6F3_0%,#E1EFEB_100%)] px-4 py-4"
                       >
-                        <div className="flex h-full min-w-0 items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <h3 className="whitespace-pre-wrap text-[15px] font-semibold leading-[22px] text-[#243238]">
-                              {content.title}
-                            </h3>
-                            {content.detail ? (
-                              <p className="mt-1.5 whitespace-pre-wrap text-[14px] leading-[21px] text-[#61777B]">
-                                {content.detail}
-                              </p>
-                            ) : null}
-                          </div>
+                        <div className="h-full min-w-0">
+                          <p className="line-clamp-3 min-w-0 whitespace-pre-wrap pr-10 text-[14px] font-normal leading-[20px] text-black">
+                            {note.text}
+                          </p>
 
                           <button
                             type="button"
                             onClick={() => setOpenMenuId(isMenuOpen ? null : note.id)}
-                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#61777B] active:bg-[#EAF3F0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#008C95]"
-                            aria-label={`More actions for ${content.title}`}
+                            data-library-menu
+                            className="absolute right-0 top-0 flex h-11 w-11 items-center justify-center rounded-full text-[#61777B] active:bg-[#EAF3F0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#008C95]"
+                            aria-label={`More actions for note: ${note.text.slice(0, 40)}`}
                             aria-expanded={isMenuOpen}
                           >
                             <MoreHorizontal size={19} strokeWidth={2} />
@@ -522,7 +522,10 @@ export default function Library({
                         </div>
 
                         {isMenuOpen ? (
-                          <div className="absolute right-3 top-12 z-10 min-w-[128px] rounded-[14px] border border-[rgba(0,140,149,0.12)] bg-[#FEFEFE] p-1.5 shadow-[0_12px_28px_rgba(64,93,91,0.14)]">
+                          <div
+                            data-library-menu
+                            className="absolute right-3 top-12 z-10 min-w-[128px] rounded-[14px] border border-[rgba(0,140,149,0.12)] bg-[#FEFEFE] p-1.5 shadow-[0_12px_28px_rgba(64,93,91,0.14)]"
+                          >
                             <button
                               type="button"
                               onClick={() => {
@@ -555,6 +558,7 @@ export default function Library({
             ))}
           </div>
         )}
+        <div className="h-[calc(114px_+_env(safe-area-inset-bottom))] shrink-0" aria-hidden="true" />
       </div>
     </section>
   );
