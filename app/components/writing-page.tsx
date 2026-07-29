@@ -75,7 +75,7 @@ export default function WritingPage({ note, mode = 'create', noteDate, onNoteCha
           onChange={(event) => onNoteChange(event.target.value)}
           placeholder="Type a word, phrase, or sentence you’d like to remember here..."
           aria-label="Vocabulary note"
-          className="voca-note-input min-h-[18rem] w-full flex-1 resize-none overflow-y-auto bg-transparent py-7 text-left text-[16px] leading-[20px] text-black outline-none placeholder:text-[#61777B]"
+          className="voca-note-input min-h-[18rem] w-full flex-1 resize-none overflow-y-auto bg-transparent py-7 text-left text-[16px] leading-[24px] text-black outline-none placeholder:text-[#61777B]"
         />
       </div>
     </section>
