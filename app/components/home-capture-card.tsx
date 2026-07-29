@@ -1,47 +1,60 @@
 'use client';
 
 import { useMemo } from 'react';
+import { ArrowRight } from 'lucide-react';
 
 const dateFormatter = new Intl.DateTimeFormat('en-US', {
-  weekday: 'long',
   month: 'long',
-  day: '2-digit',
-  year: 'numeric',
+  day: 'numeric',
 });
 
 type Props = {
-  note: string;
   onOpenNote: () => void;
 };
 
-export default function HomeCaptureCard({ note, onOpenNote }: Props) {
+export default function HomeCaptureCard({ onOpenNote }: Props) {
   const dateText = useMemo(() => dateFormatter.format(new Date()), []);
 
   return (
-    <section className="flex flex-1 flex-col gap-6">
-      <div className="space-y-2">
-        <p className="font-lingiGreeting text-[22px] font-semibold leading-none text-[#243238]">Hi Liz,</p>
-        <p className="font-lingiText text-[14px] font-normal leading-[19px] text-[#61777B]">let’s keep today’s words</p>
+    <section className="flex min-h-0 flex-1 flex-col gap-6">
+      <div className="shrink-0 space-y-2">
+        <p className="font-lingiGreeting text-[28px] font-medium leading-[34px] text-[#243238]">
+          Hi Liz, welcome back!
+        </p>
+        <p className="font-lingiText text-[16px] font-normal leading-[23px] text-[#61777B]">
+          keep what you notice, learn at your pace
+        </p>
       </div>
 
-      <button
-        type="button"
-        onClick={onOpenNote}
-        className="relative mx-auto flex h-[clamp(24rem,calc(100vh-19.75rem),34rem)] w-full max-w-[440px] flex-col rounded-[30px] border-[1px] border-[rgba(255,255,255,0.72)] bg-[rgba(255,253,245,0.78)] p-5 shadow-lingi backdrop-blur-sm"
-      >
-        <img
-          src="/lingi-parrot.png"
-          alt="Voca parrot"
-          className="pointer-events-none absolute right-[28px] top-[26px] z-10 h-[64px] w-[64px] object-contain drop-shadow-[0_8px_14px_rgba(0,0,0,0.08)]"
-        />
-        <div className="mt-3 self-start text-[12px] font-medium leading-none text-[#0E6F74]">{dateText}</div>
-
-        <div className="mt-4 flex min-h-0 flex-1 flex-col rounded-[18px] bg-[rgba(221,239,233,0.82)] p-6">
-          <div className="pt-1 text-left text-[13px] leading-[28px] text-[#61777B]">
-            {note.trim() ? note.trim() : 'Type here to catch what you want to remember...'}
+      <div className="voca-capture-frame relative mx-auto flex min-h-0 w-full max-w-[440px] flex-1 flex-col overflow-hidden rounded-[30px] border border-[rgba(0,140,149,0.2)] p-6 backdrop-blur-sm">
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-2 py-5 text-center">
+          <div className="rounded-full border border-white/60 bg-[rgba(255,253,245,0.58)] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-[#0E6F74]">
+            Today · {dateText}
           </div>
+          <h2 className="font-lingiDisplay mt-5 max-w-[320px] text-[27px] font-normal leading-[34px] text-[#243238]">
+            What caught your attention today?
+          </h2>
+          <img
+            src="/lingi-parrot.png"
+            alt=""
+            aria-hidden="true"
+            className="pointer-events-none mt-5 h-[112px] w-[104px] object-contain drop-shadow-[0_12px_18px_rgba(0,0,0,0.08)]"
+          />
+
+          <p className="mt-5 max-w-[310px] text-[15px] leading-[24px] text-[#61777B]">
+            Keep a word, phrase, or sentence here and come back to it later.
+          </p>
+
+          <button
+            type="button"
+            onClick={onOpenNote}
+            className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-[#008C95] px-5 text-[14px] font-semibold text-white transition-colors active:bg-[#006F76] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#008C95] focus-visible:ring-offset-2"
+          >
+            Start a note
+            <ArrowRight size={17} strokeWidth={2.2} aria-hidden="true" />
+          </button>
         </div>
-      </button>
+      </div>
     </section>
   );
 }

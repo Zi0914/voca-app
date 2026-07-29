@@ -8,7 +8,9 @@ import Library, { type SavedNote } from './components/library';
 import WritingPage from './components/writing-page';
 
 type ActiveView = 'home' | 'library' | 'note';
+type EditorMode = 'new' | 'draft' | 'saved';
 const STORAGE_KEY = 'voca_notes';
+const DRAFT_STORAGE_KEY = 'voca_draft';
 const LEGACY_STORAGE_KEY = 'lingi_notes';
 const DELETED_NOTE_IDS_KEY = 'voca_deleted_note_ids';
 const REPLACED_MOCK_NOTE_IDS = new Set([
@@ -79,7 +81,7 @@ function mergeSavedNotes(...noteLists: SavedNote[][]) {
   return noteLists
     .flat()
     .filter((note) => {
-      const key = `${note.id}-${note.savedAt}-${note.text}`;
+      const key = note.id;
       if (seen.has(key)) {
         return false;
       }
@@ -93,13 +95,19 @@ function mergeSavedNotes(...noteLists: SavedNote[][]) {
 export default function HomePage() {
   const [active, setActive] = useState<ActiveView>('home');
   const [note, setNote] = useState('');
+  const [newNoteText, setNewNoteText] = useState('');
+  const [editorMode, setEditorMode] = useState<EditorMode>('new');
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [editingNoteText, setEditingNoteText] = useState('');
   const [savedNotes, setSavedNotes] = useState<SavedNote[]>([]);
   const [showSavedPopup, setShowSavedPopup] = useState(false);
+  const [savedPopupMode, setSavedPopupMode] = useState<'saved' | 'updated'>('saved');
 
   useEffect(() => {
     try {
       const rawNotes = window.localStorage.getItem(STORAGE_KEY);
       const rawLegacyNotes = window.localStorage.getItem(LEGACY_STORAGE_KEY);
+      const rawDraft = window.localStorage.getItem(DRAFT_STORAGE_KEY);
       const rawDeletedNoteIds = window.localStorage.getItem(DELETED_NOTE_IDS_KEY);
       const deletedNoteIds = new Set<string>(
         rawDeletedNoteIds && Array.isArray(JSON.parse(rawDeletedNoteIds)) ? JSON.parse(rawDeletedNoteIds) : [],
@@ -118,10 +126,26 @@ export default function HomePage() {
         setSavedNotes(nextNotes);
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextNotes));
       }
+
+      if (rawDraft) {
+        setNote(rawDraft);
+      }
     } catch {
       setSavedNotes([]);
     }
   }, []);
+
+  useEffect(() => {
+    try {
+      if (note.trim()) {
+        window.localStorage.setItem(DRAFT_STORAGE_KEY, note);
+      } else {
+        window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+      }
+    } catch {
+      // Local persistence is best-effort for this prototype.
+    }
+  }, [note]);
 
   useEffect(() => {
     if (!showSavedPopup) {
@@ -133,6 +157,28 @@ export default function HomePage() {
   }, [showSavedPopup]);
 
   const handleSaved = (text: string) => {
+    if (editorMode === 'saved' && editingNoteId) {
+      setSavedNotes((currentNotes) => {
+        const nextNotes = currentNotes.map((savedNote) =>
+          savedNote.id === editingNoteId ? { ...savedNote, text } : savedNote,
+        );
+
+        try {
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextNotes));
+        } catch {
+          // Local persistence is best-effort for this prototype.
+        }
+
+        return nextNotes;
+      });
+      setEditingNoteId(null);
+      setEditingNoteText('');
+      setActive('library');
+      setSavedPopupMode('updated');
+      setShowSavedPopup(true);
+      return;
+    }
+
     const savedNote = {
       id: `${Date.now()}`,
       text,
@@ -149,8 +195,67 @@ export default function HomePage() {
       return nextNotes;
     });
     setActive('home');
-    setNote('');
+    if (editorMode === 'draft') {
+      setNote('');
+    } else {
+      setNewNoteText('');
+    }
+    setEditorMode('new');
+    setSavedPopupMode('saved');
     setShowSavedPopup(true);
+  };
+
+  const handleEditNote = (savedNote: SavedNote) => {
+    setEditorMode('saved');
+    setEditingNoteId(savedNote.id);
+    setEditingNoteText(savedNote.text);
+    setShowSavedPopup(false);
+    setActive('note');
+  };
+
+  const handleStartNewNote = () => {
+    setEditorMode('new');
+    setEditingNoteId(null);
+    setEditingNoteText('');
+    setShowSavedPopup(false);
+    setActive('note');
+  };
+
+  const handleContinueDraft = () => {
+    setEditorMode('draft');
+    setEditingNoteId(null);
+    setEditingNoteText('');
+    setShowSavedPopup(false);
+    setActive('note');
+  };
+
+  const handleDiscardDraft = () => {
+    setNote('');
+    try {
+      window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+    } catch {
+      // Local persistence is best-effort for this prototype.
+    }
+  };
+
+  const handleEditorBack = () => {
+    if (editorMode === 'saved') {
+      setEditingNoteId(null);
+      setEditingNoteText('');
+      setActive('library');
+      return;
+    }
+
+    if (editorMode === 'draft') {
+      setActive('library');
+      return;
+    }
+
+    if (newNoteText.trim() && !note.trim()) {
+      setNote(newNoteText);
+      setNewNoteText('');
+    }
+    setActive('home');
   };
 
   const handleDeleteNote = (id: string) => {
@@ -174,12 +279,23 @@ export default function HomePage() {
   };
 
   if (active === 'note') {
+    const editingNote =
+      editorMode === 'saved' && editingNoteId
+        ? savedNotes.find((savedNote) => savedNote.id === editingNoteId)
+        : null;
+    const editorText =
+      editorMode === 'saved' ? editingNoteText : editorMode === 'draft' ? note : newNoteText;
+    const handleEditorTextChange =
+      editorMode === 'saved' ? setEditingNoteText : editorMode === 'draft' ? setNote : setNewNoteText;
+
     return (
       <main className="mx-auto min-h-screen w-full max-w-[480px] bg-transparent">
         <WritingPage
-          note={note}
-          onNoteChange={setNote}
-          onBack={() => setActive('home')}
+          note={editorText}
+          mode={editorMode === 'saved' ? 'edit' : editorMode === 'draft' ? 'draft' : 'create'}
+          noteDate={editingNote?.savedAt}
+          onNoteChange={handleEditorTextChange}
+          onBack={handleEditorBack}
           onSaved={handleSaved}
         />
       </main>
@@ -187,18 +303,40 @@ export default function HomePage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-[480px] flex-col bg-transparent px-5 pb-[calc(104px_+_env(safe-area-inset-bottom))] pt-[max(1.25rem,env(safe-area-inset-top))] min-[400px]:px-6">
-      <HomeHeader />
+    <main
+      className={`mx-auto flex h-[100dvh] min-h-0 w-full max-w-[480px] flex-col overflow-hidden bg-transparent px-5 pt-[max(1.25rem,env(safe-area-inset-top))] min-[400px]:px-6 ${
+        active === 'home'
+          ? 'pb-[calc(166px_+_env(safe-area-inset-bottom))]'
+          : 'pb-[calc(106px_+_env(safe-area-inset-bottom))]'
+      }`}
+    >
       {active === 'home' ? (
-        <HomeCaptureCard note={note} onOpenNote={() => setActive('note')} />
+        <>
+          <HomeHeader />
+          <HomeCaptureCard onOpenNote={handleStartNewNote} />
+        </>
       ) : (
-        <Library notes={savedNotes} onDeleteNote={handleDeleteNote} />
+        <Library
+          notes={savedNotes}
+          draftText={note}
+          onStartNote={handleStartNewNote}
+          onContinueDraft={handleContinueDraft}
+          onDiscardDraft={handleDiscardDraft}
+          onEditNote={handleEditNote}
+          onDeleteNote={handleDeleteNote}
+        />
       )}
       {showSavedPopup ? (
         <div className="fixed bottom-[calc(112px_+_env(safe-area-inset-bottom))] left-0 right-0 z-30 mx-auto flex w-full max-w-[480px] justify-center px-5 min-[400px]:px-6">
           <div className="lingi-saved-popup w-full max-w-[432px]">
-            <p className="text-left text-[15px] font-medium text-[#243238]">Saved to Library</p>
-            <p className="mt-1 text-left text-[13px] leading-[18px] text-[#61777B]">You can find it in Library anytime.</p>
+            <p className="text-left text-[15px] font-medium text-[#243238]">
+              {savedPopupMode === 'updated' ? 'Note updated' : 'Saved to Library'}
+            </p>
+            <p className="mt-1 text-left text-[13px] leading-[18px] text-[#61777B]">
+              {savedPopupMode === 'updated'
+                ? 'Your changes have been saved.'
+                : 'You can find it in Library anytime.'}
+            </p>
           </div>
         </div>
       ) : null}
