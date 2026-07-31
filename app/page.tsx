@@ -46,6 +46,66 @@ const MOCK_SAVED_NOTES: SavedNote[] = [
     text: 'cherish - to keep something dear in your heart',
     savedAt: '2026-07-08T11:42:00.000-07:00',
   },
+  {
+    id: 'mock-2026-07-13-nuanced',
+    text: 'nuanced - showing small but meaningful differences',
+    savedAt: '2026-07-13T09:18:00.000-07:00',
+  },
+  {
+    id: 'mock-2026-07-13-resonate',
+    text: 'resonate - to feel meaningful or familiar',
+    savedAt: '2026-07-13T15:06:00.000-07:00',
+  },
+  {
+    id: 'mock-2026-07-15-fleeting',
+    text: 'fleeting - lasting for only a short time',
+    savedAt: '2026-07-15T09:18:00.000-07:00',
+  },
+  {
+    id: 'mock-2026-07-15-wholehearted',
+    text: 'wholehearted - sincere and fully committed',
+    savedAt: '2026-07-15T15:06:00.000-07:00',
+  },
+  {
+    id: 'mock-2026-07-17-contemplate',
+    text: 'contemplate - to think about something carefully',
+    savedAt: '2026-07-17T09:18:00.000-07:00',
+  },
+  {
+    id: 'mock-2026-07-17-vivid',
+    text: 'vivid - producing strong and clear images in the mind',
+    savedAt: '2026-07-17T15:06:00.000-07:00',
+  },
+  {
+    id: 'mock-2026-07-20-effortless',
+    text: 'effortless - seeming natural and easy',
+    savedAt: '2026-07-20T09:18:00.000-07:00',
+  },
+  {
+    id: 'mock-2026-07-20-reassuring',
+    text: 'reassuring - making someone feel less worried',
+    savedAt: '2026-07-20T15:06:00.000-07:00',
+  },
+  {
+    id: 'mock-2026-07-25-overlook',
+    text: 'overlook - to fail to notice something',
+    savedAt: '2026-07-25T09:18:00.000-07:00',
+  },
+  {
+    id: 'mock-2026-07-25-grounded',
+    text: 'grounded - calm, sensible, and emotionally steady',
+    savedAt: '2026-07-25T15:06:00.000-07:00',
+  },
+  {
+    id: 'mock-2026-07-27-subtle',
+    text: 'subtle - delicate and not immediately obvious',
+    savedAt: '2026-07-27T09:18:00.000-07:00',
+  },
+  {
+    id: 'mock-2026-07-27-worthwhile',
+    text: 'worthwhile - valuable enough to justify the effort',
+    savedAt: '2026-07-27T15:06:00.000-07:00',
+  },
 ];
 
 function normalizeSavedNotes(value: unknown): SavedNote[] {
