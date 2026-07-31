@@ -18,7 +18,10 @@ export default function BottomNav({ active, onChange }: Props) {
             onClick={() => onChange('home')}
             className="group flex min-h-[52px] flex-col items-center justify-center gap-1 rounded-full px-3 text-[11px] leading-none"
           >
-            <Home size={24} className={active === 'home' ? 'stroke-[2.35] text-[#008C95]' : 'stroke-[2.2] text-[#61777B]'} />
+            <Home
+              size={24}
+              className={active === 'home' ? 'stroke-[2.35] text-[#008C95]' : 'stroke-[2.2] text-[#61777B]'}
+            />
             <span className={active === 'home' ? 'text-[#008C95]' : 'text-[#61777B]'}>Home</span>
           </button>
           <button

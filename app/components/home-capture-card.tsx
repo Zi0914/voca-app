@@ -16,7 +16,12 @@ type Props = {
   onKeepDraft: (text: string) => void;
 };
 
-export default function HomeCaptureCard({ note, onNoteChange, onSaveNote, onKeepDraft }: Props) {
+export default function HomeCaptureCard({
+  note,
+  onNoteChange,
+  onSaveNote,
+  onKeepDraft,
+}: Props) {
   const dateText = useMemo(() => dateFormatter.format(new Date()), []);
   const [isFlipped, setIsFlipped] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
@@ -58,7 +63,7 @@ export default function HomeCaptureCard({ note, onNoteChange, onSaveNote, onKeep
     resetTimeoutRef.current = window.setTimeout(() => {
       setIsFlipped(false);
       setShowSaved(false);
-    }, 900);
+    }, 1400);
   };
 
   const handleEditorKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -74,8 +79,8 @@ export default function HomeCaptureCard({ note, onNoteChange, onSaveNote, onKeep
   };
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col gap-6">
-      <div className="shrink-0 space-y-2">
+    <section className="voca-home-capture-section flex min-h-0 flex-1 flex-col gap-6">
+      <div className="voca-home-greeting shrink-0 space-y-2">
         <p className="font-lingiGreeting text-[28px] font-medium leading-[34px] text-[#243238]">
           Hi Liz, welcome back!
         </p>
@@ -173,6 +178,9 @@ export default function HomeCaptureCard({ note, onNoteChange, onSaveNote, onKeep
                     <i className={styles.sparkThree}>✦</i>
                   </span>
                   <span className="mt-3 text-[16px] font-semibold text-[#243238]">Note saved</span>
+                  <span className="mt-1.5 text-[13px] leading-[19px] text-[#61777B]">
+                    Read it anytime in your Library.
+                  </span>
                 </div>
               ) : null}
             </div>

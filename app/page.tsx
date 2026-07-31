@@ -403,6 +403,33 @@ export default function HomePage() {
     setDrafts((currentDrafts) => currentDrafts.filter((draft) => draft.id !== id));
   };
 
+  const handleUpdateDraft = (id: string, text: string) => {
+    setDrafts((currentDrafts) =>
+      currentDrafts.map((draft) =>
+        draft.id === id ? { ...draft, text, updatedAt: new Date().toISOString() } : draft,
+      ),
+    );
+  };
+
+  const handleSaveDraft = (id: string, text: string) => {
+    const savedNote = {
+      id: `${Date.now()}`,
+      text,
+      savedAt: new Date().toISOString(),
+    };
+
+    setSavedNotes((currentNotes) => {
+      const nextNotes = [savedNote, ...currentNotes];
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextNotes));
+      } catch {
+        // Local persistence is best-effort for this prototype.
+      }
+      return nextNotes;
+    });
+    setDrafts((currentDrafts) => currentDrafts.filter((draft) => draft.id !== id));
+  };
+
   const handleEditorBack = () => {
     if (editorMode === 'saved') {
       setEditingNoteId(null);
@@ -506,7 +533,7 @@ export default function HomePage() {
     <main
       className={`mx-auto flex h-[100dvh] min-h-0 w-full max-w-[480px] flex-col overflow-hidden bg-transparent px-3 pt-[max(1.25rem,env(safe-area-inset-top))] min-[400px]:px-4 ${
         active === 'home'
-          ? 'pb-[calc(144px_+_env(safe-area-inset-bottom))]'
+          ? 'voca-home-main pb-[calc(144px_+_env(safe-area-inset-bottom))]'
           : 'pb-0'
       }`}
     >
@@ -525,7 +552,8 @@ export default function HomePage() {
           notes={savedNotes}
           drafts={drafts}
           onStartNote={handleStartNewNote}
-          onContinueDraft={handleContinueDraft}
+          onUpdateDraft={handleUpdateDraft}
+          onSaveDraft={handleSaveDraft}
           onDiscardDraft={handleDiscardDraft}
           onUpdateNote={handleUpdateNote}
           onDeleteNote={handleDeleteNote}

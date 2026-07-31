@@ -9,9 +9,11 @@ import {
   MoreHorizontal,
   Pencil,
   Search,
+  Star,
   Trash2,
   X,
 } from 'lucide-react';
+import captureStyles from './home-capture-card.module.css';
 
 export type SavedNote = {
   id: string;
@@ -29,7 +31,8 @@ type Props = {
   notes: SavedNote[];
   drafts: DraftNote[];
   onStartNote: () => void;
-  onContinueDraft: (draft: DraftNote) => void;
+  onUpdateDraft: (id: string, text: string) => void;
+  onSaveDraft: (id: string, text: string) => void;
   onDiscardDraft: (id: string) => void;
   onUpdateNote: (id: string, text: string) => void;
   onDeleteNote: (id: string) => void;
@@ -99,7 +102,8 @@ export default function Library({
   notes,
   drafts,
   onStartNote,
-  onContinueDraft,
+  onUpdateDraft,
+  onSaveDraft,
   onDiscardDraft,
   onUpdateNote,
   onDeleteNote,
@@ -127,7 +131,12 @@ export default function Library({
   const [isPreviewEditing, setIsPreviewEditing] = useState(false);
   const [previewEditText, setPreviewEditText] = useState('');
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [previewDraft, setPreviewDraft] = useState<DraftNote | null>(null);
+  const [previewDraftText, setPreviewDraftText] = useState('');
+  const [showDraftSaved, setShowDraftSaved] = useState(false);
   const previewTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const draftTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const draftSaveTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (isSearchOpen) {
@@ -143,6 +152,11 @@ export default function Library({
     const closeSearchOutside = (event: PointerEvent) => {
       const target = event.target;
       if (target instanceof Node && searchAreaRef.current?.contains(target)) {
+        return;
+      }
+
+      if (target instanceof Element && target.closest('[data-library-note-card]')) {
+        setIsSearchOpen(false);
         return;
       }
 
@@ -199,6 +213,36 @@ export default function Library({
       previewTextareaRef.current?.focus();
     }
   }, [isPreviewEditing]);
+
+  useEffect(() => {
+    if (!previewDraft) {
+      return;
+    }
+
+    draftTextareaRef.current?.focus();
+    const closeDraftWithEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        if (showDraftSaved) {
+          return;
+        }
+        if (previewDraftText.trim()) {
+          onUpdateDraft(previewDraft.id, previewDraftText.trim());
+        }
+        setPreviewDraft(null);
+      }
+    };
+
+    document.addEventListener('keydown', closeDraftWithEscape);
+    return () => document.removeEventListener('keydown', closeDraftWithEscape);
+  }, [onUpdateDraft, previewDraft, previewDraftText, showDraftSaved]);
+
+  useEffect(() => {
+    return () => {
+      if (draftSaveTimeoutRef.current) {
+        window.clearTimeout(draftSaveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const visibleMonthDays = useMemo(() => getVisibleMonthDays(calendarMonth), [calendarMonth]);
   const filteredNotes = useMemo(() => {
@@ -313,7 +357,11 @@ export default function Library({
                 setIsSearchOpen(true);
               }}
               className={`inline-flex h-11 w-11 shrink-0 items-center justify-center bg-transparent transition-colors focus-visible:rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#008C95] ${
-                isSearchOpen ? '-ml-11 text-[#008C95]' : 'text-[#61777B] active:text-[#008C95]'
+                isSearchOpen
+                  ? '-ml-11 text-[#008C95]'
+                  : query.trim()
+                    ? 'text-[#008C95]'
+                    : 'text-[#61777B] active:text-[#008C95]'
               }`}
               aria-label={isSearchOpen ? 'Close search' : 'Open search'}
               aria-expanded={isSearchOpen}
@@ -323,7 +371,7 @@ export default function Library({
           </div>
         </div>
 
-        <div className="mt-6 flex items-center justify-between gap-3">
+        <div className="mt-5 flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2">
             <button
               type="button"
@@ -504,7 +552,7 @@ export default function Library({
         ) : null}
       </div>
 
-      <div className="hide-scrollbar mt-3 min-h-0 flex-1 overflow-y-auto">
+      <div className="hide-scrollbar min-h-0 flex-1 overflow-y-auto">
         {groupedNotes.length === 0 && !showDrafts ? (
           <div className="flex flex-col items-center rounded-[22px] border border-[rgba(0,140,149,0.16)] bg-[#EAF4F1] px-6 py-7 text-center">
             <img
@@ -571,7 +619,12 @@ export default function Library({
 
                         <button
                           type="button"
-                          onClick={() => onContinueDraft(draft)}
+                          onClick={() => {
+                            setPreviewDraft(draft);
+                            setPreviewDraftText(draft.text);
+                            setShowDraftSaved(false);
+                          }}
+                          data-library-note-card
                           className="mt-4 inline-flex h-9 items-center justify-center gap-2 rounded-full bg-[#008C95] px-4 text-[13px] font-semibold leading-none text-white transition-colors active:bg-[#007B83] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#008C95] focus-visible:ring-offset-2"
                         >
                           Keep editing
@@ -619,7 +672,8 @@ export default function Library({
                           setIsPreviewEditing(false);
                           setIsDeleteConfirmOpen(false);
                         }}
-                        className="voca-capture-frame block h-[148px] w-full min-w-0 rounded-[18px] border border-[rgba(0,140,149,0.18)] p-2 text-left transition-transform active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#008C95] focus-visible:ring-offset-2"
+                        data-library-note-card
+                        className="voca-capture-frame block aspect-square w-full min-w-0 rounded-[18px] border border-[rgba(0,140,149,0.18)] p-2 text-left transition-transform active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#008C95] focus-visible:ring-offset-2"
                         aria-label={`Read note: ${note.text.slice(0, 60)}`}
                       >
                         <div className="relative h-full min-w-0 overflow-hidden rounded-[14px] border border-white/75 bg-[rgba(255,253,245,0.76)] px-3 py-3">
@@ -803,6 +857,101 @@ export default function Library({
               </div>
             </div>
           ) : null}
+        </div>
+      ) : null}
+
+      {previewDraft ? (
+        <div className="fixed inset-0 z-50 mx-auto flex w-full max-w-[480px] items-center justify-center px-3 py-[max(1rem,env(safe-area-inset-top))] min-[400px]:px-4">
+          <button
+            type="button"
+            onClick={() => {
+              if (showDraftSaved) {
+                return;
+              }
+              if (previewDraftText.trim()) {
+                onUpdateDraft(previewDraft.id, previewDraftText.trim());
+              }
+              setPreviewDraft(null);
+            }}
+            disabled={showDraftSaved}
+            className="absolute inset-0 h-full w-full bg-[rgba(36,50,56,0.22)] backdrop-blur-[2px]"
+            aria-label="Close draft"
+          />
+
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Edit draft"
+            className="voca-capture-frame relative z-10 flex h-[72dvh] min-h-[420px] max-h-[680px] w-full max-w-[440px] flex-col rounded-[30px] border border-[rgba(0,140,149,0.24)] p-4 shadow-[0_24px_64px_rgba(36,50,56,0.20)]"
+          >
+            <div className="grid h-11 shrink-0 grid-cols-[88px_1fr_88px] items-center">
+              <button
+                type="button"
+                onClick={() => {
+                  if (showDraftSaved) {
+                    return;
+                  }
+                  if (previewDraftText.trim()) {
+                    onUpdateDraft(previewDraft.id, previewDraftText.trim());
+                  }
+                  setPreviewDraft(null);
+                }}
+                disabled={showDraftSaved}
+                className="flex h-11 w-11 items-center justify-center justify-self-start rounded-full text-[#008C95] active:bg-white/50 disabled:opacity-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#008C95]"
+                aria-label="Close draft"
+              >
+                <X size={19} strokeWidth={2.1} />
+              </button>
+              <p className="text-center text-[11px] font-semibold uppercase tracking-[0.1em] text-[#0E6F74]">
+                Not saved yet
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  const trimmedText = previewDraftText.trim();
+                  if (!trimmedText) {
+                    return;
+                  }
+                  onSaveDraft(previewDraft.id, trimmedText);
+                  setShowDraftSaved(true);
+                  draftSaveTimeoutRef.current = window.setTimeout(() => {
+                    setShowDraftSaved(false);
+                    setPreviewDraft(null);
+                  }, 900);
+                }}
+                disabled={!previewDraftText.trim() || showDraftSaved}
+                className="inline-flex h-9 min-w-[88px] items-center justify-center justify-self-end rounded-full px-3 text-[12px] font-semibold text-white enabled:bg-[#008C95] enabled:active:bg-[#007B83] disabled:bg-[#B9C8C3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#008C95]"
+              >
+                Save note
+              </button>
+            </div>
+
+            <div className="relative mt-3 min-h-0 flex-1 overflow-hidden rounded-[22px] border border-white/75 bg-[rgba(255,253,245,0.82)] px-5 py-5">
+              <textarea
+                ref={draftTextareaRef}
+                value={previewDraftText}
+                onChange={(event) => setPreviewDraftText(event.target.value)}
+                disabled={showDraftSaved}
+                aria-label="Edit draft"
+                className="h-full min-h-[260px] w-full resize-none bg-transparent text-[16px] leading-[27px] text-[#243238] outline-none"
+              />
+
+              {showDraftSaved ? (
+                <div
+                  className={`${captureStyles.savedOverlay} absolute inset-0 flex flex-col items-center justify-center bg-[rgba(255,253,245,0.94)]`}
+                  role="status"
+                >
+                  <span className={captureStyles.starBurst} aria-hidden="true">
+                    <Star size={48} strokeWidth={1.8} fill="#F6CF69" />
+                    <i className={captureStyles.sparkOne}>✦</i>
+                    <i className={captureStyles.sparkTwo}>✦</i>
+                    <i className={captureStyles.sparkThree}>✦</i>
+                  </span>
+                  <span className="mt-3 text-[16px] font-semibold text-[#243238]">Note saved</span>
+                </div>
+              ) : null}
+            </div>
+          </div>
         </div>
       ) : null}
     </section>
