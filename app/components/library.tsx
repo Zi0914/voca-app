@@ -552,7 +552,7 @@ export default function Library({
         ) : null}
       </div>
 
-      <div className="hide-scrollbar min-h-0 flex-1 overflow-y-auto">
+      <div className="hide-scrollbar min-h-0 flex-1 overflow-y-auto pt-5">
         {groupedNotes.length === 0 && !showDrafts ? (
           <div className="flex flex-col items-center rounded-[22px] border border-[rgba(0,140,149,0.16)] bg-[#EAF4F1] px-6 py-7 text-center">
             <img
