@@ -4,13 +4,15 @@ import { useEffect, useState } from 'react';
 import HomeHeader from './components/home-header';
 import HomeCaptureCard from './components/home-capture-card';
 import BottomNav from './components/bottom-nav';
-import Library, { type SavedNote } from './components/library';
+import Library, { type DraftNote, type SavedNote } from './components/library';
 import WritingPage from './components/writing-page';
 
 type ActiveView = 'home' | 'library' | 'note';
 type EditorMode = 'new' | 'draft' | 'saved';
 const STORAGE_KEY = 'voca_notes';
-const DRAFT_STORAGE_KEY = 'voca_draft';
+const DRAFTS_STORAGE_KEY = 'voca_drafts';
+const LEGACY_DRAFT_STORAGE_KEY = 'voca_draft';
+const HOME_DRAFT_STORAGE_KEY = 'voca_home_draft';
 const LEGACY_STORAGE_KEY = 'lingi_notes';
 const DELETED_NOTE_IDS_KEY = 'voca_deleted_note_ids';
 const REPLACED_MOCK_NOTE_IDS = new Set([
@@ -57,12 +59,17 @@ function normalizeSavedNotes(value: unknown): SavedNote[] {
         return null;
       }
 
-      const note = item as { id?: unknown; text?: unknown; savedAt?: unknown; addedAt?: unknown };
+      const note = item as {
+        id?: unknown;
+        text?: unknown;
+        savedAt?: unknown;
+        addedAt?: unknown;
+      };
       if (typeof note.text !== 'string') {
         return null;
       }
 
-      return {
+      const savedNote: SavedNote = {
         id: typeof note.id === 'string' ? note.id : `${Date.now()}-${Math.random()}`,
         text: note.text,
         savedAt:
@@ -72,6 +79,7 @@ function normalizeSavedNotes(value: unknown): SavedNote[] {
               ? note.addedAt
               : new Date().toISOString(),
       };
+      return savedNote;
     })
     .filter((item): item is SavedNote => Boolean(item));
 }
@@ -92,13 +100,41 @@ function mergeSavedNotes(...noteLists: SavedNote[][]) {
     .sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
 }
 
+function normalizeDrafts(value: unknown): DraftNote[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => {
+      if (!item || typeof item !== 'object') {
+        return null;
+      }
+
+      const draft = item as { id?: unknown; text?: unknown; updatedAt?: unknown };
+      if (typeof draft.text !== 'string' || !draft.text.trim()) {
+        return null;
+      }
+
+      return {
+        id: typeof draft.id === 'string' ? draft.id : `draft-${Date.now()}-${Math.random()}`,
+        text: draft.text,
+        updatedAt: typeof draft.updatedAt === 'string' ? draft.updatedAt : new Date().toISOString(),
+      };
+    })
+    .filter((draft): draft is DraftNote => Boolean(draft))
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+}
+
 export default function HomePage() {
   const [active, setActive] = useState<ActiveView>('home');
-  const [note, setNote] = useState('');
+  const [drafts, setDrafts] = useState<DraftNote[]>([]);
   const [newNoteText, setNewNoteText] = useState('');
   const [editorMode, setEditorMode] = useState<EditorMode>('new');
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [editingNoteText, setEditingNoteText] = useState('');
+  const [editingDraftId, setEditingDraftId] = useState<string | null>(null);
+  const [editingDraftText, setEditingDraftText] = useState('');
   const [savedNotes, setSavedNotes] = useState<SavedNote[]>([]);
   const [showSavedPopup, setShowSavedPopup] = useState(false);
   const [savedPopupMode, setSavedPopupMode] = useState<'saved' | 'updated'>('saved');
@@ -107,7 +143,9 @@ export default function HomePage() {
     try {
       const rawNotes = window.localStorage.getItem(STORAGE_KEY);
       const rawLegacyNotes = window.localStorage.getItem(LEGACY_STORAGE_KEY);
-      const rawDraft = window.localStorage.getItem(DRAFT_STORAGE_KEY);
+      const rawDrafts = window.localStorage.getItem(DRAFTS_STORAGE_KEY);
+      const rawLegacyDraft = window.localStorage.getItem(LEGACY_DRAFT_STORAGE_KEY);
+      const rawHomeDraft = window.localStorage.getItem(HOME_DRAFT_STORAGE_KEY);
       const rawDeletedNoteIds = window.localStorage.getItem(DELETED_NOTE_IDS_KEY);
       const deletedNoteIds = new Set<string>(
         rawDeletedNoteIds && Array.isArray(JSON.parse(rawDeletedNoteIds)) ? JSON.parse(rawDeletedNoteIds) : [],
@@ -127,8 +165,22 @@ export default function HomePage() {
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextNotes));
       }
 
-      if (rawDraft) {
-        setNote(rawDraft);
+      const nextDrafts = rawDrafts ? normalizeDrafts(JSON.parse(rawDrafts)) : [];
+      if (rawLegacyDraft && !nextDrafts.some((draft) => draft.text === rawLegacyDraft)) {
+        nextDrafts.push({
+          id: `draft-legacy-${Date.now()}`,
+          text: rawLegacyDraft,
+          updatedAt: new Date().toISOString(),
+        });
+      }
+      if (nextDrafts.length > 0) {
+        setDrafts(nextDrafts);
+        window.localStorage.setItem(DRAFTS_STORAGE_KEY, JSON.stringify(nextDrafts));
+        window.localStorage.removeItem(LEGACY_DRAFT_STORAGE_KEY);
+      }
+
+      if (rawHomeDraft) {
+        setNewNoteText(rawHomeDraft);
       }
     } catch {
       setSavedNotes([]);
@@ -137,15 +189,27 @@ export default function HomePage() {
 
   useEffect(() => {
     try {
-      if (note.trim()) {
-        window.localStorage.setItem(DRAFT_STORAGE_KEY, note);
+      if (drafts.length > 0) {
+        window.localStorage.setItem(DRAFTS_STORAGE_KEY, JSON.stringify(drafts));
       } else {
-        window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+        window.localStorage.removeItem(DRAFTS_STORAGE_KEY);
       }
     } catch {
       // Local persistence is best-effort for this prototype.
     }
-  }, [note]);
+  }, [drafts]);
+
+  useEffect(() => {
+    try {
+      if (newNoteText.trim()) {
+        window.localStorage.setItem(HOME_DRAFT_STORAGE_KEY, newNoteText);
+      } else {
+        window.localStorage.removeItem(HOME_DRAFT_STORAGE_KEY);
+      }
+    } catch {
+      // Local persistence is best-effort for this prototype.
+    }
+  }, [newNoteText]);
 
   useEffect(() => {
     if (!showSavedPopup) {
@@ -195,11 +259,12 @@ export default function HomePage() {
       return nextNotes;
     });
     setActive('home');
-    if (editorMode === 'draft') {
-      setNote('');
-    } else {
-      setNewNoteText('');
+    if (editorMode === 'draft' && editingDraftId) {
+      setDrafts((currentDrafts) => currentDrafts.filter((draft) => draft.id !== editingDraftId));
+      setEditingDraftId(null);
+      setEditingDraftText('');
     }
+    setNewNoteText('');
     setEditorMode('new');
     setSavedPopupMode('saved');
     setShowSavedPopup(true);
@@ -221,21 +286,61 @@ export default function HomePage() {
     setActive('note');
   };
 
-  const handleContinueDraft = () => {
+  const handleHomeNoteSaved = (text: string) => {
+    const savedNote = {
+      id: `${Date.now()}`,
+      text,
+      savedAt: new Date().toISOString(),
+    };
+
+    setSavedNotes((currentNotes) => {
+      const nextNotes = [savedNote, ...currentNotes];
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextNotes));
+      } catch {
+        // Local persistence is best-effort for this prototype.
+      }
+      return nextNotes;
+    });
+    setNewNoteText('');
+  };
+
+  const handleHomeDraftKept = (text: string) => {
+    const trimmedText = text.trim();
+    if (!trimmedText) {
+      return;
+    }
+
+    setDrafts((currentDrafts) => [
+      {
+        id: `draft-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        text: trimmedText,
+        updatedAt: new Date().toISOString(),
+      },
+      ...currentDrafts,
+    ]);
+    setNewNoteText('');
+  };
+
+  const handleNavChange = (nextView: 'home' | 'library') => {
+    if (nextView === 'library' && newNoteText.trim()) {
+      handleHomeDraftKept(newNoteText);
+    }
+    setActive(nextView);
+  };
+
+  const handleContinueDraft = (draft: DraftNote) => {
     setEditorMode('draft');
     setEditingNoteId(null);
     setEditingNoteText('');
+    setEditingDraftId(draft.id);
+    setEditingDraftText(draft.text);
     setShowSavedPopup(false);
     setActive('note');
   };
 
-  const handleDiscardDraft = () => {
-    setNote('');
-    try {
-      window.localStorage.removeItem(DRAFT_STORAGE_KEY);
-    } catch {
-      // Local persistence is best-effort for this prototype.
-    }
+  const handleDiscardDraft = (id: string) => {
+    setDrafts((currentDrafts) => currentDrafts.filter((draft) => draft.id !== id));
   };
 
   const handleEditorBack = () => {
@@ -247,13 +352,28 @@ export default function HomePage() {
     }
 
     if (editorMode === 'draft') {
+      if (editingDraftId) {
+        setDrafts((currentDrafts) => {
+          const trimmedText = editingDraftText.trim();
+          if (!trimmedText) {
+            return currentDrafts.filter((draft) => draft.id !== editingDraftId);
+          }
+
+          return currentDrafts.map((draft) =>
+            draft.id === editingDraftId
+              ? { ...draft, text: trimmedText, updatedAt: new Date().toISOString() }
+              : draft,
+          );
+        });
+      }
+      setEditingDraftId(null);
+      setEditingDraftText('');
       setActive('library');
       return;
     }
 
-    if (newNoteText.trim() && !note.trim()) {
-      setNote(newNoteText);
-      setNewNoteText('');
+    if (newNoteText.trim()) {
+      handleHomeDraftKept(newNoteText);
     }
     setActive('home');
   };
@@ -278,15 +398,35 @@ export default function HomePage() {
     });
   };
 
+  const handleUpdateNote = (id: string, text: string) => {
+    setSavedNotes((currentNotes) => {
+      const nextNotes = currentNotes.map((savedNote) =>
+        savedNote.id === id ? { ...savedNote, text } : savedNote,
+      );
+
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextNotes));
+      } catch {
+        // Local persistence is best-effort for this prototype.
+      }
+
+      return nextNotes;
+    });
+  };
+
   if (active === 'note') {
     const editingNote =
       editorMode === 'saved' && editingNoteId
         ? savedNotes.find((savedNote) => savedNote.id === editingNoteId)
         : null;
     const editorText =
-      editorMode === 'saved' ? editingNoteText : editorMode === 'draft' ? note : newNoteText;
+      editorMode === 'saved' ? editingNoteText : editorMode === 'draft' ? editingDraftText : newNoteText;
     const handleEditorTextChange =
-      editorMode === 'saved' ? setEditingNoteText : editorMode === 'draft' ? setNote : setNewNoteText;
+      editorMode === 'saved'
+        ? setEditingNoteText
+        : editorMode === 'draft'
+          ? setEditingDraftText
+          : setNewNoteText;
 
     return (
       <main className="mx-auto min-h-screen w-full max-w-[480px] bg-transparent">
@@ -313,16 +453,21 @@ export default function HomePage() {
       {active === 'home' ? (
         <>
           <HomeHeader />
-          <HomeCaptureCard onOpenNote={handleStartNewNote} />
+          <HomeCaptureCard
+            note={newNoteText}
+            onNoteChange={setNewNoteText}
+            onSaveNote={handleHomeNoteSaved}
+            onKeepDraft={handleHomeDraftKept}
+          />
         </>
       ) : (
         <Library
           notes={savedNotes}
-          draftText={note}
+          drafts={drafts}
           onStartNote={handleStartNewNote}
           onContinueDraft={handleContinueDraft}
           onDiscardDraft={handleDiscardDraft}
-          onEditNote={handleEditNote}
+          onUpdateNote={handleUpdateNote}
           onDeleteNote={handleDeleteNote}
         />
       )}
@@ -340,7 +485,7 @@ export default function HomePage() {
           </div>
         </div>
       ) : null}
-      <BottomNav active={active} onChange={(v) => setActive(v)} />
+      <BottomNav active={active} onChange={handleNavChange} />
     </main>
   );
 }
